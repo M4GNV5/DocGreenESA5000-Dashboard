@@ -3,7 +3,7 @@
 This repository contains some utilities and selfmade documentation of the
 DocGreen ESA 5000 sold by Lidl in December 2019. Lidl also sold the Explorer ESA
 1919, which looks similar, but i can't promise its the same internally.
-The scooter is similar to the Xiami M365 however there are some differences:
+The scooter is similar to the Xiaomi M365 however there are some differences:
 - the lights are mounted elsewhere
 - the light does not change when braking
 - it has no bluetooth (i count that as a plus)
@@ -14,7 +14,7 @@ and contents are different.
 
 ## In this repository
 
-- [docgreen-protocol.txt](docgreen-protocol.txt): a list of bus messages and the meaning of some of the bytes
+- [docgreen-protocol](docgreen-protocol.md): a list of bus messages and the meaning of some of the bytes
 - [MegaSniffer](MegaSniffer/): a small arduino program to sniff the internal bus using an Arduino Mega
 - [sniffs](sniffs/): a set of labeled sniffs
 - [DocGreenDisplay](DocGreenDisplay/): a replacement for the stock head unit using an arduino nano and
