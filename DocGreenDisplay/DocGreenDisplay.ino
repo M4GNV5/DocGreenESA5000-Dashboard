@@ -13,6 +13,7 @@
 typedef struct
 {
 	bool ecoMode;
+	bool shuttingDown;
 	bool lights;
 	bool buttonPress;
 	uint8_t errorCode;
@@ -151,6 +152,7 @@ bool receivePacket(docgreen_status_t *status)
 	*/
 
 	status->ecoMode = buff[4] == 0x02;
+	status->shuttingDown = buff[5] == 0x08;
 	status->lights = buff[6] == 0x01;
 	status->buttonPress = buff[10] == 0x01;
 	status->errorCode = buff[11];
@@ -225,6 +227,13 @@ void loop()
 			display.println("ERROR");
 			display.setTextSize(2);
 			display.println(status.errorCode);	
+			display.display();
+			return;
+		}
+		else if(status.shuttingDown)
+		{
+			display.setTextSize(1);
+			display.println("BYE");	
 			display.display();
 			return;
 		}
