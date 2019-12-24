@@ -10,7 +10,7 @@ packets exluding the `55 AA` head and the checksum.
 ## Address `28` motor controller information
 - `00 01 02 03 04 05 06 07 08 09 10 11 12` (index in decimal)
 - `0B 28 6D 09 00 07 00 00 00 00 00 00 61`
-- bytes 0-3 `0B 28 6D 09`: is the packet header (length, address, command arg)
+- bytes 0-3 `0B 28 6D 09`: is the packet header (length, address, command, arg)
 - `00 07 00 00 00 00 00 00 61` (bytes 4-12) is the payload
   - byte 4: `00` for normal mode and `02` for eco mode
   - byte 5: ?
@@ -24,7 +24,7 @@ packets exluding the `55 AA` head and the checksum.
 ## Address `25` input information
 - `00 01 02 03 04 05 06 07 08` (index in decimal)
 - `07 25 60 05 04 2C 2C 00 00`
-- bytes 0-3 `07 25 60 05`: is the packet header (length, address, command arg)
+- bytes 0-3 `07 25 60 05`: is the packet header (length, address, command, arg)
 - `04 2C 2C 00 00` (bytes 4-8) is the payload
   - byte 4: ?
   - byte 5: acceleration lever (min 2C, max C5)
@@ -36,7 +36,7 @@ packets exluding the `55 AA` head and the checksum.
 ## Address `27` input information 2
 - `00 01 02 03 04 05 06 07 08 09 10` (index in decimal)
 - `09 27 63 07 06 2C 2C 00 00 00 04`
-- bytes 0-3 `07 25 60 05`: is the packet header (length, address, command arg)
+- bytes 0-3 `07 25 60 05`: is the packet header (length, address, command, arg)
 - bytes 4-8: same as in the packet to address `25`
 - byte 9: ?
 - byte 10: ?
