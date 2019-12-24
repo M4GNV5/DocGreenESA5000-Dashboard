@@ -1,11 +1,10 @@
 ## Packet layout
-all packages start with `55 AA` (same as with Xiaomi M365 scooters). Followed
-is the length of the payload + 2. According to some M365 reversing a packet
-looks like this:
+all packages start with `55 AA` (same as with Xiaomi M365 scooters).
+The packet header looks like this:
 55 AA length address command arg payload[length - 2] checksumLow checksumHigh.
 
-On the ESA 5000 there are three different packets. The following lists these the
-packets exluding the `55 AA` head and the checksum.
+On the ESA 5000 there are three different packets. The following lists these
+packets exluding the `55 AA` header and the checksum.
 
 ## Address `28` motor controller information
 - `00 01 02 03 04 05 06 07 08 09 10 11 12` (index in decimal)
@@ -31,7 +30,7 @@ packets exluding the `55 AA` head and the checksum.
   - byte 6: electric brake lever (min 2C, max B5)
   - byte 7: ?
   - byte 8: ?
-- when the mechaical brake is pulled bytes 5 & 6 are `2C B5`
+- when the mechaical brake is pulled bytes 5&6 are `2C B5`
 
 ## Address `27` input information 2
 - `00 01 02 03 04 05 06 07 08 09 10` (index in decimal)
@@ -40,4 +39,5 @@ packets exluding the `55 AA` head and the checksum.
 - bytes 4-8: same as in the packet to address `25`
 - byte 9: ?
 - byte 10: ?
-- the packet to address `25` is sent four times, then the packet to address `27` is sent once
+- the packet to address `25` is sent four times, then the packet to address `27`
+is sent once, resulting in five packets one of them to `27`.
