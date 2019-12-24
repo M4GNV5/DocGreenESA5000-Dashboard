@@ -8,7 +8,7 @@ On the ESA 5000 there are three different packets. The following lists these the
 packets exluding the `55 AA` head and the checksum.
 
 ## Address `28` motor controller information
-- `0  1  2  3  4  5  6  7  8  9  10 11 12` (index in decimal)
+- `00 01 02 03 04 05 06 07 08 09 10 11 12` (index in decimal)
 - `0B 28 6D 09 00 07 00 00 00 00 00 00 61`
 - bytes 0-3 `0B 28 6D 09`: is the packet header (length, address, command arg)
 - `00 07 00 00 00 00 00 00 61` (bytes 4-12) is the payload
@@ -22,7 +22,7 @@ packets exluding the `55 AA` head and the checksum.
   - byte 12: state of charge in %
 
 ## Address `25` input information
-- `0  1  2  3  4  5  6  7  8` (index in decimal)
+- `00 01 02 03 04 05 06 07 08` (index in decimal)
 - `07 25 60 05 04 2C 2C 00 00`
 - bytes 0-3 `07 25 60 05`: is the packet header (length, address, command arg)
 - `04 2C 2C 00 00` (bytes 4-8) is the payload
@@ -34,7 +34,7 @@ packets exluding the `55 AA` head and the checksum.
 - when the mechaical brake is pulled bytes 5 & 6 are `2C B5`
 
 ## Address `27` input information 2
-- `0  1  2  3  4  5  6  7  8   9 10` (index in decimal)
+- `00 01 02 03 04 05 06 07 08 09 10` (index in decimal)
 - `09 27 63 07 06 2C 2C 00 00 00 04`
 - bytes 0-3 `07 25 60 05`: is the packet header (length, address, command arg)
 - bytes 4-8: same as in the packet to address `25`
