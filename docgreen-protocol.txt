@@ -1,0 +1,35 @@
+- 0  1  2  3  4  5  6  7  8  9  10 11 12 (index in decimal)
+- 0B 28 6D 09 00 07 00 00 00 00 00 00 61
+    - regular package from ESC
+    - 0B 28 6D 09
+      ^ length
+         ^ address
+            ^ command
+               ^ arg
+    - 00 07 00 00 00 00 00 00 61
+      ^ 00 in normal mode, 02 in eco mode
+         ^ ?
+            ^ 01 when lights on
+               ^ ?
+                  ^ speed (2 bytes) in meters/hour
+                        ^ 01 when button is pressed?
+                            ^ error code?
+                              ^ SOC?
+ 
+- 07 25 60 05 04 2C 2C 00 00
+package from DSP
+  ^ length
+     ^ address
+        ^ command
+           ^ mode
+              ^ ?
+                 ^ acceleration lever (min 2C, max C5)
+                    ^ electric brake lever (min 2C, max B5)
+                        ^ ?
+                           ^ ?
+
+- 07 25 60 05 04 2D B5
+package from DSP when mechanical break lever is pulled
+
+- 09 27 63 07 06 2C 2C 00 00
+package from DSP
