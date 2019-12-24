@@ -23,17 +23,6 @@ typedef struct
 
 Adafruit_SSD1306 display(128, 32, &Wire, -1);
 
-/*
-void logByteInHex(uint8_t val)
-{
-	if(val < 16)
-		Serial.print('0');
-
-	Serial.print(val, 16);
-	Serial.print(' ');
-}
-*/
-
 uint16_t calculateChecksum(uint8_t *data)
 {
 	uint8_t len = data[0] + 2;
@@ -45,15 +34,9 @@ uint16_t calculateChecksum(uint8_t *data)
 	return sum;
 }
 
-void transmitPacket(uint8_t throttle, uint8_t brake, bool mechanicalBrake)
+void transmitPacket(uint8_t throttle, uint8_t brake)
 {
 	static int counter = 0;
-
-	if(mechanicalBrake)
-	{
-		throttle = THROTTLE_MIN;
-		brake = BRAKE_MAX; // TODO smoother braking?
-	}
 
 	uint8_t fifthHeader[] = {
 		0x09, 0x27, 0x63, 0x07, 0x06,
@@ -89,13 +72,6 @@ void transmitPacket(uint8_t throttle, uint8_t brake, bool mechanicalBrake)
 
 	// XXX we assume our architecture uses LE order here
 	*(uint16_t *)&data[len - 2] = calculateChecksum(data);
-
-	/*
-	Serial.print("sending packet: ");
-	for(int i = 0; i < len; i++)
-		logByteInHex(data[i]);
-	Serial.println();
-	*/
 
 	RX_DISABLE;
 	ScooterSerial.write(0x55);
@@ -144,13 +120,6 @@ bool receivePacket(docgreen_status_t *status)
 	if(actualChecksum != expectedChecksum)
 		return false;
 
-	/*
-	Serial.print("received packet: ");
-	for(int i = 0; i < len + 2; i++)
-		logByteInHex(buff[i]);
-	Serial.println();
-	*/
-
 	status->ecoMode = buff[4] == 0x02;
 	status->shuttingDown = buff[5] == 0x08;
 	status->lights = buff[6] == 0x01;
@@ -164,7 +133,6 @@ bool receivePacket(docgreen_status_t *status)
 
 void setup()
 {
-	//Serial.begin(115200);
 	ScooterSerial.begin(115200);
 
 	pinMode(MECHANICAL_BRAKE_PIN, INPUT);
@@ -187,14 +155,24 @@ void loop()
 {
 	static uint16_t lastThrottle = 0;
 	static uint16_t lastBrake = 0;
+
 	static uint32_t lastTransmit = 0;
 	uint32_t now = millis();
 	if(now - lastTransmit > TRANSMIT_INTERVAL)
 	{
 		uint16_t throttle = analogRead(THROTTLE_PIN);
 		uint16_t brake = analogRead(BRAKE_PIN);
-		bool mechanicalBrake = digitalRead(MECHANICAL_BRAKE_PIN) == HIGH;
-		
+
+		if(digitalRead(MECHANICAL_BRAKE_PIN) == HIGH)
+		{
+			throttle = THROTTLE_READ_MIN;
+
+			// XXX: in the orginal configuration pulling the mechanical brake
+			// lever makes the scooter brake with the maximum power on the
+			// electrical brake, however that feels very harsh and dangerous
+			brake = map(40, 0, 100, THROTTLE_READ_MIN, THROTTLE_READ_MAX);
+		}
+
 		if(throttle < THROTTLE_READ_MIN)
 			throttle = THROTTLE_READ_MIN;
 		if(throttle > THROTTLE_READ_MAX)
@@ -210,7 +188,7 @@ void loop()
 		throttle = map(throttle, THROTTLE_READ_MIN, THROTTLE_READ_MAX, THROTTLE_MIN, THROTTLE_MAX);
 		brake = map(brake, BRAKE_READ_MIN, BRAKE_READ_MAX, BRAKE_MIN, BRAKE_MAX);
 
-		transmitPacket(throttle, brake, mechanicalBrake);
+		transmitPacket(throttle, brake);
 
 		lastTransmit = now;
 	}
@@ -221,9 +199,24 @@ void loop()
 		display.clearDisplay();
 		display.setCursor(0, 0);
 
+		display.setTextSize(1);
+		display.println("SPEED");
+		display.setTextSize(2);
+		uint8_t speed = status.speed / 1000;
+		if(status.speed % 1000 >= 500)
+			speed++;
+		display.println(speed);
+
+		display.setCursor(0, display.getCursorY() + 10);
+		display.setTextSize(1);
+		display.println("SOC");
+		display.setTextSize(2);
+		display.println(status.soc);
+
+		display.setTextSize(1);
+
 		if(status.errorCode != 0)
 		{
-			display.setTextSize(1);
 			display.println("ERROR");
 			display.setTextSize(2);
 			display.println(status.errorCode);	
@@ -232,38 +225,16 @@ void loop()
 		}
 		else if(status.shuttingDown)
 		{
-			display.setTextSize(1);
 			display.println("BYE");	
 			display.display();
 			return;
 		}
 
-		display.setTextSize(1);
-		display.println("SPEED");
-		display.setTextSize(2);
-		display.println(status.speed / 1000);
-
 		display.setCursor(0, display.getCursorY() + 10);
-
-		display.setTextSize(1);
-		display.println("SOC");
-		display.setTextSize(2);		
-		display.println(status.soc);
-
-
-		display.setCursor(0, display.getCursorY() + 10);
-		display.setTextSize(1);
-
-		if(status.ecoMode)
-			display.println("ECO");
-		else
-			display.println("SPORT");
+		display.println(status.ecoMode ? "ECO" : "SPORT");
 
 		display.setCursor(0, display.getCursorY() + 3);
-		if(status.lights)
-			display.println("NIGHT");
-		else
-			display.println("DAY");
+		display.println(status.lights ? "NIGHT" : "DAY");
 
 		uint16_t lastX = display.width() - 1;
 

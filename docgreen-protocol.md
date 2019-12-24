@@ -35,7 +35,7 @@ packets exluding the `55 AA` header and the checksum.
 ## Address `27` input information 2
 - `00 01 02 03 04 05 06 07 08 09 10` (index in decimal)
 - `09 27 63 07 06 2C 2C 00 00 00 04`
-- bytes 0-3 `07 25 60 07`: is the packet header (length, address, command, arg)
+- bytes 0-3 `09 27 63 07`: is the packet header (length, address, command, arg)
 - bytes 4-8: same as in the packet to address `25`
 - byte 9: ?
 - byte 10: ?
