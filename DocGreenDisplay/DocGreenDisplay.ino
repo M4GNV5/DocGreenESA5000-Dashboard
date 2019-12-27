@@ -25,6 +25,23 @@ Adafruit_SSD1306 display(128, 32, &Wire, -1);
 uint16_t lastThrottle = 0;
 uint16_t lastBrake = 0;
 
+#define BUTTON_UP     0b00000001
+#define BUTTON_RIGHT  0b00000010
+#define BUTTON_DOWN   0b00000100
+#define BUTTON_LEFT   0b00001000
+#define BUTTON_CANCEL 0b00010000
+#define BUTTON_POWER  0b00100000
+uint8_t pressedButtons = 0;
+
+bool isLocked = true;
+uint8_t password[] = {
+	BUTTON_POWER,
+	BUTTON_UP,
+	BUTTON_DOWN,
+	BUTTON_CANCEL,
+	BUTTON_RIGHT,
+};
+
 #define BEAM_WIDTH 32
 #define BEAM_HEIGHT 32
 const uint8_t PROGMEM beam_bitmap[] = {
@@ -170,6 +187,60 @@ bool receivePacket(docgreen_status_t *status)
 	return true;
 }
 
+void detectButtonPress(bool brakeLever)
+{
+	static uint8_t heldThrottleButtons = 0;
+	static uint8_t heldBrakeButtons = 0;
+	static bool hadBrakeLever = false;
+
+	if(lastThrottle > THROTTLE_READ_MAX - 100)
+		heldThrottleButtons |= BUTTON_RIGHT;
+	else if(lastThrottle > THROTTLE_READ_MIN + 100)
+		heldThrottleButtons |= BUTTON_DOWN;
+
+	if(heldThrottleButtons != 0 && lastThrottle <= THROTTLE_READ_MIN + 100)
+	{
+		if(heldThrottleButtons & BUTTON_RIGHT)
+			heldThrottleButtons = heldThrottleButtons & ~BUTTON_DOWN;
+
+		pressedButtons |= heldThrottleButtons;
+		heldThrottleButtons = 0;
+	}
+
+
+	if(lastBrake > THROTTLE_READ_MAX - 100)
+		heldBrakeButtons |= BUTTON_LEFT;
+	else if(lastBrake > BRAKE_READ_MIN + 100)
+		heldBrakeButtons |= BUTTON_UP;
+
+	if(heldBrakeButtons != 0 && lastBrake <= THROTTLE_READ_MIN + 100)
+	{
+		if(heldBrakeButtons & BUTTON_LEFT)
+			heldBrakeButtons = heldBrakeButtons & ~BUTTON_UP;
+
+		pressedButtons |= heldBrakeButtons;
+		heldBrakeButtons = 0;
+	}
+
+
+	if(brakeLever)
+	{
+		hadBrakeLever = true;
+	}
+	else if(hadBrakeLever)
+	{
+		hadBrakeLever = false;
+		pressedButtons |= BUTTON_CANCEL;
+	}
+}
+
+uint8_t getAndResetButtons()
+{
+	uint8_t val = pressedButtons;
+	pressedButtons = 0;
+	return val;
+}
+
 void showDriveMenu(docgreen_status_t& status)
 {
 	display.setTextSize(1);
@@ -210,6 +281,53 @@ void showByeMenu(docgreen_status_t& status)
 {
 	display.setTextSize(4);
 	display.print("BYE");
+}
+
+void showLockMenu(docgreen_status_t& status)
+{
+	static int index = 0;
+	static bool failed = false;
+
+	display.setTextSize(1);
+	display.println("LOCK");
+
+	display.setCursor(0, display.getCursorY() + 10);
+	display.println("ENTER");
+	display.println("PIN");
+
+	display.setCursor(0, display.getCursorY() + 10);
+	for(int i = 0; i < index; i++)
+		display.print("*");
+
+
+
+	uint8_t buttons = getAndResetButtons();
+	if(buttons == 0)
+		return;
+
+	uint8_t wantedButton = password[index];
+	if((buttons & ~wantedButton) != 0)
+		failed = true;
+
+	index++;
+	if(index >= sizeof(password) / sizeof(uint8_t))
+	{
+		if(!failed)
+			isLocked = false;
+
+		index = 0;
+		failed = false;
+	}
+
+	if(!isLocked)
+	{
+		display.setCursor(0, display.getCursorY() + 10);
+		display.println("HELLO");
+	}
+	else
+	{
+		display.print("*");
+	}
 }
 
 void showInfoMenu(docgreen_status_t& status)
@@ -264,6 +382,16 @@ void showInfoMenu(docgreen_status_t& status)
 		loadingPos = 0;
 }
 
+void showDebugMenu(docgreen_status_t& status)
+{
+	display.setTextSize(1);
+	display.println("gas");
+	display.println(lastThrottle);
+	display.println("brake");
+	display.println(lastBrake);
+	display.println("buttons");
+	display.println(pressedButtons, 16);
+}
 
 void setup()
 {
@@ -293,16 +421,7 @@ void loop()
 	{
 		uint16_t throttle = analogRead(THROTTLE_PIN);
 		uint16_t brake = analogRead(BRAKE_PIN);
-
-		if(digitalRead(MECHANICAL_BRAKE_PIN) == HIGH)
-		{
-			throttle = THROTTLE_READ_MIN;
-
-			// XXX: in the orginal configuration pulling the mechanical brake
-			// lever makes the scooter brake with the maximum power on the
-			// electrical brake, however that feels very harsh and dangerous
-			brake = map(40, 0, 100, THROTTLE_READ_MIN, THROTTLE_READ_MAX);
-		}
+		bool brakeLever = digitalRead(MECHANICAL_BRAKE_PIN) == HIGH;
 
 		if(throttle < THROTTLE_READ_MIN)
 			throttle = THROTTLE_READ_MIN;
@@ -315,25 +434,55 @@ void loop()
 
 		lastThrottle = throttle;
 		lastBrake = brake;
+		detectButtonPress(brakeLever);
+
+		if(brakeLever)
+		{
+			throttle = THROTTLE_READ_MIN;
+
+			// XXX: in the orginal configuration pulling the mechanical brake
+			// lever makes the scooter brake with the maximum power on the
+			// electrical brake, however that feels very harsh and dangerous
+			brake = map(40, 0, 100, THROTTLE_READ_MIN, THROTTLE_READ_MAX);
+		}
+		if(isLocked)
+		{
+			throttle = THROTTLE_READ_MIN;
+			brake = BRAKE_READ_MAX;
+		}
 
 		throttle = map(throttle, THROTTLE_READ_MIN, THROTTLE_READ_MAX, THROTTLE_MIN, THROTTLE_MAX);
 		brake = map(brake, BRAKE_READ_MIN, BRAKE_READ_MAX, BRAKE_MIN, BRAKE_MAX);
 
-		transmitPacket(throttle, brake);
 
+		transmitPacket(throttle, brake);
 		lastTransmit = now;
 	}
 
 	docgreen_status_t status;
 	if(ScooterSerial.available() && receivePacket(&status))
 	{
+		static bool hadButton = false;
+		if(status.buttonPress)
+		{
+			hadButton = true;
+		}
+		else if(hadButton)
+		{
+			hadButton = false;
+			pressedButtons |= BUTTON_POWER;
+		}
+
 		display.clearDisplay();
 		display.setCursor(0, 0);
 
+		//if(true) showDebugMenu(status); else
 		if(status.errorCode != 0)
 			showErrorMenu(status);
 		else if(status.shuttingDown)
 			showByeMenu(status);
+		else if(isLocked)
+			showLockMenu(status);
 		else if(status.speed > 3000)
 			showDriveMenu(status);
 		else
