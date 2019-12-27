@@ -35,13 +35,7 @@ uint16_t lastBrake = 0;
 uint8_t pressedButtons = 0;
 
 bool isLocked = true;
-uint8_t password[] = {
-	BUTTON_POWER,
-	BUTTON_UP,
-	BUTTON_DOWN,
-	BUTTON_CANCEL,
-	BUTTON_RIGHT,
-};
+uint8_t password[] = {LOCK_PASSWORD};
 
 uint16_t calculateChecksum(uint8_t *data)
 {

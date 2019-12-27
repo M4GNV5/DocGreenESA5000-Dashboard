@@ -1,5 +1,12 @@
 #pragma once
 
+#define LOCK_PASSWORD \
+	BUTTON_POWER, \
+	BUTTON_UP, \
+	BUTTON_DOWN, \
+	BUTTON_CANCEL, \
+	BUTTON_RIGHT,
+
 #define ScooterSerial Serial
 #define RX_DISABLE UCSR0B &= ~_BV(RXEN0);
 #define RX_ENABLE  UCSR0B |=  _BV(RXEN0);
