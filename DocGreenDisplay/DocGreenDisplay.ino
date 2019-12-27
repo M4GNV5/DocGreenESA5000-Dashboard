@@ -22,6 +22,8 @@ typedef struct
 } docgreen_status_t;
 
 Adafruit_SSD1306 display(128, 32, &Wire, -1);
+uint16_t lastThrottle = 0;
+uint16_t lastBrake = 0;
 
 uint16_t calculateChecksum(uint8_t *data)
 {
@@ -131,6 +133,84 @@ bool receivePacket(docgreen_status_t *status)
 	return true;
 }
 
+void showDriveMenu(docgreen_status_t& status)
+{
+	display.setTextSize(1);
+	display.println("SPEED");
+	uint8_t speed = status.speed / 1000;
+	if(status.speed % 1000 >= 500)
+		speed++;
+	display.setTextSize(4);
+	display.println(speed);
+}
+
+void showErrorMenu(docgreen_status_t& status)
+{
+	display.setTextSize(1);
+	display.println("ERROR");
+	display.setTextSize(4);
+	display.println(status.errorCode);
+}
+
+void showByeMenu(docgreen_status_t& status)
+{
+	display.setTextSize(4);
+	display.print("BYE");
+}
+
+void showInfoMenu(docgreen_status_t& status)
+{
+	display.setTextSize(1);
+	display.println("SPEED");
+	uint8_t speed = status.speed / 1000;
+	if(status.speed % 1000 >= 500)
+		speed++;
+	display.setTextSize(2);
+	display.println(speed);
+
+	display.setCursor(0, display.getCursorY() + 10);
+
+	display.setTextSize(1);
+	display.println("SOC");
+	display.setTextSize(2);
+	if(status.soc == 100)
+		display.println("FU");
+	else
+		display.println(status.soc);
+
+	display.setTextSize(1);
+
+	display.setCursor(0, display.getCursorY() + 10);
+	display.println(status.ecoMode ? "ECO" : "SPORT");
+
+	display.setCursor(0, display.getCursorY() + 3);
+	display.println(status.lights ? "NIGHT" : "DAY");
+
+	uint16_t lastX = display.width() - 1;
+
+	display.setCursor(0, display.getCursorY() + 3);
+	display.println("gas");
+	uint16_t currY = display.getCursorY();
+	uint16_t endX = map(lastThrottle, THROTTLE_READ_MIN, THROTTLE_READ_MAX, 0, lastX);
+	display.drawLine(0, currY, endX, currY, SSD1306_WHITE);
+
+	display.setCursor(0, display.getCursorY() + 4);
+	display.println("brake");
+	currY = display.getCursorY();
+	endX = map(lastBrake, BRAKE_READ_MIN, BRAKE_READ_MAX, 0, lastX);
+	display.drawLine(0, currY, endX, currY, SSD1306_WHITE);
+
+	static int loadingPos = 0;
+	uint8_t startY = display.getCursorY() + 10;
+	uint8_t endY = display.height() - 1;
+	display.drawLine(loadingPos, startY, loadingPos, endY, SSD1306_WHITE);
+
+	loadingPos++;
+	if(loadingPos >= display.width())
+		loadingPos = 0;
+}
+
+
 void setup()
 {
 	ScooterSerial.begin(115200);
@@ -153,9 +233,6 @@ void setup()
 
 void loop()
 {
-	static uint16_t lastThrottle = 0;
-	static uint16_t lastBrake = 0;
-
 	static uint32_t lastTransmit = 0;
 	uint32_t now = millis();
 	if(now - lastTransmit > TRANSMIT_INTERVAL)
@@ -199,65 +276,14 @@ void loop()
 		display.clearDisplay();
 		display.setCursor(0, 0);
 
-		display.setTextSize(1);
-		display.println("SPEED");
-		display.setTextSize(2);
-		uint8_t speed = status.speed / 1000;
-		if(status.speed % 1000 >= 500)
-			speed++;
-		display.println(speed);
-
-		display.setCursor(0, display.getCursorY() + 10);
-		display.setTextSize(1);
-		display.println("SOC");
-		display.setTextSize(2);
-		display.println(status.soc);
-
-		display.setTextSize(1);
-
 		if(status.errorCode != 0)
-		{
-			display.println("ERROR");
-			display.setTextSize(2);
-			display.println(status.errorCode);	
-			display.display();
-			return;
-		}
+			showErrorMenu(status);
 		else if(status.shuttingDown)
-		{
-			display.println("BYE");	
-			display.display();
-			return;
-		}
-
-		display.setCursor(0, display.getCursorY() + 10);
-		display.println(status.ecoMode ? "ECO" : "SPORT");
-
-		display.setCursor(0, display.getCursorY() + 3);
-		display.println(status.lights ? "NIGHT" : "DAY");
-
-		uint16_t lastX = display.width() - 1;
-
-		display.setCursor(0, display.getCursorY() + 3);
-		display.println("gas");
-		uint16_t currY = display.getCursorY();
-		uint16_t endX = map(lastThrottle, THROTTLE_READ_MIN, THROTTLE_READ_MAX, 0, lastX);
-		display.drawLine(0, currY, endX, currY, SSD1306_WHITE);
-
-		display.setCursor(0, display.getCursorY() + 4);
-		display.println("brake");
-		currY = display.getCursorY();
-		endX = map(lastBrake, BRAKE_READ_MIN, BRAKE_READ_MAX, 0, lastX);
-		display.drawLine(0, currY, endX, currY, SSD1306_WHITE);
-
-		static int loadingPos = 0;
-		uint8_t startY = display.getCursorY() + 10;
-		uint8_t endY = display.height() - 1;
-		display.drawLine(loadingPos, startY, loadingPos, endY, SSD1306_WHITE);
-
-		loadingPos++;
-		if(loadingPos >= display.width())
-			loadingPos = 0;
+			showByeMenu(status);
+		else if(status.speed > 3000)
+			showDriveMenu(status);
+		else
+			showInfoMenu(status);
 
 		display.display();
 	}
