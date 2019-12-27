@@ -4,6 +4,7 @@
 #include <Adafruit_SSD1306.h>
 #include <stdint.h>
 #include "config.h"
+#include "icons.h"
 
 #define THROTTLE_MIN 0x2C
 #define THROTTLE_MAX 0xC5
@@ -40,43 +41,6 @@ uint8_t password[] = {
 	BUTTON_DOWN,
 	BUTTON_CANCEL,
 	BUTTON_RIGHT,
-};
-
-#define BEAM_WIDTH 32
-#define BEAM_HEIGHT 32
-const uint8_t PROGMEM beam_bitmap[] = {
-  B00000000,B00000000,B00000000,B00000000,
-  B00000000,B00000000,B00000000,B00000000,
-  B00000000,B00000000,B00000000,B00000000,
-  B00000000,B00000000,B00000000,B00000000,
-  B00000000,B00000000,B11111110,B00000000,
-  B00000000,B11100001,B11111111,B10000000,
-  B00000011,B11100011,B10000011,B11100000,
-  B00001111,B11000111,B00000000,B11110000,
-  B00011111,B00000110,B00000000,B00111000,
-  B01111100,B01001110,B00000000,B00011100,
-  B11110001,B11101100,B00000000,B00001110,
-  B00000111,B11001100,B00000000,B00000110,
-  B00011111,B00001100,B00000000,B00000111,
-  B01111100,B01001100,B00000000,B00000011,
-  B11110001,B11101100,B00000000,B00000011,
-  B01000111,B11001100,B00000000,B00000011,
-  B00011111,B00001100,B00000000,B00000111,
-  B01111100,B00001100,B00000000,B00000110,
-  B11110001,B11101110,B00000000,B00001110,
-  B11000111,B11000110,B00000000,B00011100,
-  B00011111,B00000111,B00000000,B01111000,
-  B01111100,B00000111,B00000001,B11110000,
-  B11110000,B11100011,B11111111,B11000000,
-  B11000011,B11000001,B11111111,B00000000,
-  B00001111,B10000000,B00010000,B00000000,
-  B00111110,B00000000,B00000000,B00000000,
-  B11111000,B00000000,B00000000,B00000000,
-  B11100000,B00000000,B00000000,B00000000,
-  B00000000,B00000000,B00000000,B00000000,
-  B00000000,B00000000,B00000000,B00000000,
-  B00000000,B00000000,B00000000,B00000000,
-  B00000000,B00000000,B00000000,B00000000,
 };
 
 uint16_t calculateChecksum(uint8_t *data)
@@ -241,7 +205,7 @@ uint8_t getAndResetButtons()
 	return val;
 }
 
-void showDriveMenu(docgreen_status_t& status)
+void showDriveScreen(docgreen_status_t& status)
 {
 	display.setTextSize(1);
 	display.println("SPEED");
@@ -269,7 +233,7 @@ void showDriveMenu(docgreen_status_t& status)
 	}
 }
 
-void showErrorMenu(docgreen_status_t& status)
+void showErrorScreen(docgreen_status_t& status)
 {
 	display.setTextSize(1);
 	display.println("ERROR");
@@ -277,7 +241,7 @@ void showErrorMenu(docgreen_status_t& status)
 	display.println(status.errorCode);
 }
 
-void showByeMenu(docgreen_status_t& status)
+void showByeScreen(docgreen_status_t& status)
 {
 	display.setTextSize(4);
 	display.print("BYE");
@@ -330,7 +294,23 @@ void showLockMenu(docgreen_status_t& status)
 	}
 }
 
-void showInfoMenu(docgreen_status_t& status)
+void showIntro()
+{
+	for(int i = 127; i >= 0; i--)
+	{
+		display.clearDisplay();
+		display.drawBitmap(
+			0, (display.height() - SCOOTER_HEIGHT) / 2,
+			scooter_bitmap, SCOOTER_WIDTH, SCOOTER_HEIGHT, 1
+		);
+		display.drawLine(0, i, display.width(), i, SSD1306_WHITE);
+		display.display();
+
+		delay(1);
+	}
+}
+
+void showInfoScreen(docgreen_status_t& status)
 {
 	display.setTextSize(1);
 	display.println("SPEED");
@@ -358,39 +338,76 @@ void showInfoMenu(docgreen_status_t& status)
 	display.setCursor(0, display.getCursorY() + 3);
 	display.println(status.lights ? "NIGHT" : "DAY");
 
-	uint16_t lastX = display.width() - 1;
-
-	display.setCursor(0, display.getCursorY() + 3);
-	display.println("gas");
-	uint16_t currY = display.getCursorY();
-	uint16_t endX = map(lastThrottle, THROTTLE_READ_MIN, THROTTLE_READ_MAX, 0, lastX);
-	display.drawLine(0, currY, endX, currY, SSD1306_WHITE);
-
-	display.setCursor(0, display.getCursorY() + 4);
-	display.println("brake");
-	currY = display.getCursorY();
-	endX = map(lastBrake, BRAKE_READ_MIN, BRAKE_READ_MAX, 0, lastX);
-	display.drawLine(0, currY, endX, currY, SSD1306_WHITE);
-
-	static int loadingPos = 0;
-	uint8_t startY = display.getCursorY() + 10;
-	uint8_t endY = display.height() - 1;
-	display.drawLine(loadingPos, startY, loadingPos, endY, SSD1306_WHITE);
-
-	loadingPos++;
-	if(loadingPos >= display.width())
-		loadingPos = 0;
+	// TODO show milage etc.
 }
 
-void showDebugMenu(docgreen_status_t& status)
+void showDebugScreen(docgreen_status_t& status)
 {
 	display.setTextSize(1);
+	display.println("DEBUG");
+	display.println();
+	display.println("soc");
+	display.println(status.soc);
 	display.println("gas");
 	display.println(lastThrottle);
 	display.println("brake");
 	display.println(lastBrake);
-	display.println("buttons");
+	display.println("press");
+	display.print("0x");
 	display.println(pressedButtons, 16);
+}
+
+void showLockOptionMenu(uint8_t button)
+{
+	if(button & BUTTON_CANCEL)
+		isLocked = true;
+
+	display.setTextSize(1);
+	display.println("press\nbrake\nto\nlock");
+}
+
+void showIntroMenu(uint8_t button)
+{
+	if(button & BUTTON_CANCEL)
+		showIntro();
+
+	display.setTextSize(1);
+	display.println("press\nbrake\nto\nshow\nintro");
+}
+
+void showMainMenu(docgreen_status_t& status)
+{
+	uint8_t button = getAndResetButtons();
+
+	static int menu = 0;
+	if(button & BUTTON_RIGHT)
+	{
+		menu++;
+		if(menu > 3)
+			menu = 0;
+	}
+	if(button & BUTTON_LEFT)
+	{
+		menu--;
+		if(menu < 0)
+			menu = 3;
+	}
+
+	switch(menu)
+	{
+		case 0:
+			showInfoScreen(status);
+			break;
+		case 1:
+			showLockOptionMenu(button);
+			break;
+		case 2:
+			showIntroMenu(button);
+			break;
+		case 3:
+			showDebugScreen(status);
+			break;
+	}
 }
 
 void setup()
@@ -400,17 +417,12 @@ void setup()
 	pinMode(MECHANICAL_BRAKE_PIN, INPUT);
 
 	display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
-	display.display();
-	delay(1000);
 
 	display.setRotation(1);
 	display.setTextSize(1);
 	display.setTextColor(SSD1306_WHITE);
 
-	display.clearDisplay();
-	display.setCursor(0, 0);
-	display.println("NO\nDATA");
-	display.display();
+	showIntro();
 }
 
 void loop()
@@ -451,7 +463,7 @@ void loop()
 
 			// if we set brake to max from boot up the ESC thinks the brake
 			// sensor is broken
-			if(millis() > 3000)
+			if(millis() > 5000)
 				brake = BRAKE_READ_MAX;
 			else
 				brake = BRAKE_READ_MIN;
@@ -489,15 +501,15 @@ void loop()
 
 		//if(true) showDebugMenu(status); else
 		if(status.errorCode != 0)
-			showErrorMenu(status);
+			showErrorScreen(status);
 		else if(status.shuttingDown)
-			showByeMenu(status);
+			showByeScreen(status);
 		else if(isLocked)
 			showLockMenu(status);
 		else if(inDrive)
-			showDriveMenu(status);
+			showDriveScreen(status);
 		else
-			showInfoMenu(status);
+			showMainMenu(status);
 
 		display.display();
 	}
