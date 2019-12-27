@@ -255,9 +255,9 @@ void showDriveMenu(docgreen_status_t& status)
 
 	if(status.ecoMode)
 	{
-		display.setCursor(0, display.getCursorY() + 5);
-		display.setTextSize(2);
-		display.println("E");
+		display.setCursor(0, display.getCursorY() + 10);
+		display.setTextSize(1);
+		display.println("ECO");
 	}
 
 	if(status.lights)
@@ -448,12 +448,17 @@ void loop()
 		if(isLocked)
 		{
 			throttle = THROTTLE_READ_MIN;
-			brake = BRAKE_READ_MAX;
+
+			// if we set brake to max from boot up the ESC thinks the brake
+			// sensor is broken
+			if(millis() > 3000)
+				brake = BRAKE_READ_MAX;
+			else
+				brake = BRAKE_READ_MIN;
 		}
 
 		throttle = map(throttle, THROTTLE_READ_MIN, THROTTLE_READ_MAX, THROTTLE_MIN, THROTTLE_MAX);
 		brake = map(brake, BRAKE_READ_MIN, BRAKE_READ_MAX, BRAKE_MIN, BRAKE_MAX);
-
 
 		transmitPacket(throttle, brake);
 		lastTransmit = now;
@@ -476,6 +481,12 @@ void loop()
 		display.clearDisplay();
 		display.setCursor(0, 0);
 
+		static bool inDrive = false;
+		if(status.speed > 5000)
+			inDrive = true;
+		else if(status.speed < 1000)
+			inDrive = false;
+
 		//if(true) showDebugMenu(status); else
 		if(status.errorCode != 0)
 			showErrorMenu(status);
@@ -483,7 +494,7 @@ void loop()
 			showByeMenu(status);
 		else if(isLocked)
 			showLockMenu(status);
-		else if(status.speed > 3000)
+		else if(inDrive)
 			showDriveMenu(status);
 		else
 			showInfoMenu(status);
