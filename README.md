@@ -30,6 +30,7 @@ under "Physical Connections" if you want to use DocGreenDisplay.
 
 ## Pictures
 
+[![](pictures/tuning-thumb.png)](https://i.m4gnus.de/d8401.mp4)
 ![](pictures/sniffing.jpg)
 ![](pictures/display-prototype.jpg)
 ![](pictures/cablehell.jpg)

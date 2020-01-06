@@ -6,6 +6,14 @@ The packet header looks like this:
 On the ESA 5000 there are three different packets. The following lists these
 packets exluding the `55 AA` header and the checksum.
 
+## Address `22` tuning
+- `00 01 02 03 04 05` (index in decimal)
+- `04 22 01 F2 F3 02`
+- bytes 0-3 `04 22 01 F2`: is the packet header (length, address, command, arg)
+- `F3 02` maximum allowed rounds per minute (little endian uint16_t)
+- with the default 8.5" wheel `0x02f3` translates to ~30.7km/h
+- `(0x02f3 * 0.2159 * pi * 60) / 1000 = 30.7256`
+
 ## Address `28` motor controller information
 - `00 01 02 03 04 05 06 07 08 09 10 11 12` (index in decimal)
 - `0B 28 6D 09 00 07 00 00 00 00 00 00 61`
