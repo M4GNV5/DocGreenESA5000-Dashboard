@@ -290,14 +290,14 @@ void showLockMenu(docgreen_status_t& status)
 
 void showIntro()
 {
-	for(int i = 127; i >= 0; i--)
+	int width = display.width();
+	for(int i = width; i >= -width; i--)
 	{
 		display.clearDisplay();
 		display.drawBitmap(
-			0, (display.height() - SCOOTER_HEIGHT) / 2,
+			i, (display.height() - SCOOTER_HEIGHT) / 2,
 			scooter_bitmap, SCOOTER_WIDTH, SCOOTER_HEIGHT, 1
 		);
-		display.drawLine(0, i, display.width(), i, SSD1306_WHITE);
 		display.display();
 
 		delay(1);
@@ -335,6 +335,52 @@ void showInfoScreen(docgreen_status_t& status)
 	// TODO show milage etc.
 }
 
+void showTuningMenu(uint8_t button)
+{
+	static uint32_t configuredSpeed = 20;
+	static uint32_t speed = 20;
+
+	display.setTextSize(1);
+	display.println("max");
+	display.println("speed");
+	display.setTextSize(2);
+	display.println(speed);
+	display.setTextSize(1);
+	display.println("rpm");
+	display.println((speed * 2518) / 100);
+
+	display.println();
+	if(configuredSpeed == speed)
+		display.println("set");
+
+	if(button & BUTTON_DOWN)
+		speed++;
+	if(button & BUTTON_UP)
+		speed--;
+
+	if(speed > 30)
+		speed = 30;
+
+	if(button & BUTTON_RIGHT)
+	{
+		uint8_t data[] = {
+			0x55, 0xAA, 0x04, 0x22, 0x01, 0xF2,
+			0, 0, //rpm
+			0, 0, //checksum
+		};
+
+		// XXX we assume our architecture uses LE order here
+		*(uint16_t *)&data[6] = (speed * 252) / 10;
+		*(uint16_t *)&data[8] = calculateChecksum(data + 2);
+
+		RX_DISABLE;
+		ScooterSerial.write(data, sizeof(data) / sizeof(uint8_t));
+		RX_ENABLE;
+
+		configuredSpeed = speed;
+	}
+}
+
 void showDebugScreen(docgreen_status_t& status)
 {
 	display.setTextSize(1);
@@ -346,61 +392,101 @@ void showDebugScreen(docgreen_status_t& status)
 	display.println(lastThrottle);
 	display.println("brake");
 	display.println(lastBrake);
-	display.println("press");
-	display.print("0x");
-	display.println(pressedButtons, 16);
 }
 
 void showLockOptionMenu(uint8_t button)
 {
-	if(button & BUTTON_CANCEL)
+	if(button & BUTTON_RIGHT)
 		isLocked = true;
 
 	display.setTextSize(1);
-	display.println("press\nbrake\nto\nlock");
+	display.println("lock?");
 }
 
 void showIntroMenu(uint8_t button)
 {
-	if(button & BUTTON_CANCEL)
+	if(button & BUTTON_RIGHT)
 		showIntro();
 
 	display.setTextSize(1);
-	display.println("press\nbrake\nto\nshow\nintro");
+	display.println("show\nintro?");
 }
 
 void showMainMenu(docgreen_status_t& status)
 {
 	uint8_t button = getAndResetButtons();
-
+	static bool inMenu = true;
 	static int menu = 0;
-	if(button & BUTTON_RIGHT)
+
+	if(!inMenu && button & BUTTON_RIGHT)
 	{
-		menu++;
-		if(menu > 3)
-			menu = 0;
+		inMenu = true;
+		button = 0;
 	}
-	if(button & BUTTON_LEFT)
+	if(inMenu && button & BUTTON_LEFT)
 	{
-		menu--;
-		if(menu < 0)
-			menu = 3;
+		inMenu = false;
+		button = 0;
 	}
 
-	switch(menu)
+	if(inMenu)
 	{
-		case 0:
-			showInfoScreen(status);
-			break;
-		case 1:
-			showLockOptionMenu(button);
-			break;
-		case 2:
-			showIntroMenu(button);
-			break;
-		case 3:
-			showDebugScreen(status);
-			break;
+		switch(menu)
+		{
+			case 0:
+				showInfoScreen(status);
+				break;
+			case 1:
+				showLockOptionMenu(button);
+				break;
+			case 2:
+				showTuningMenu(button);
+				break;
+			case 3:
+				showIntroMenu(button);
+				break;
+			case 4:
+				showDebugScreen(status);
+				break;
+		}
+	}
+	else
+	{
+		static const char *menus[] = {
+			"info",
+			"lock",
+			"tune",
+			"intro",
+			"debug",
+		};
+
+		if(button & BUTTON_DOWN)
+		{
+			menu++;
+			if(menu > 4)
+				menu = 0;
+		}
+		if(button & BUTTON_UP)
+		{
+			menu--;
+			if(menu < 0)
+				menu = 3;
+		}
+
+		display.setTextSize(1);
+		display.println("MENU");
+		display.setCursor(0, display.getCursorY() + 5);
+
+		for(int i = 0; i < sizeof(menus) / sizeof(const char *); i++)
+		{
+			if(i == menu)
+				display.setTextColor(SSD1306_BLACK, SSD1306_WHITE);
+
+			display.println(menus[i]);
+
+			if(i == menu)
+				display.setTextColor(SSD1306_WHITE, SSD1306_BLACK);
+		}
 	}
 }
 
@@ -488,10 +574,17 @@ void loop()
 		display.setCursor(0, 0);
 
 		static bool inDrive = false;
-		if(status.speed > 5000)
+		if(!inDrive && status.speed > 5000)
+		{
 			inDrive = true;
-		else if(status.speed < 1000)
+		}
+		else if(inDrive && status.speed < 1000)
+		{
 			inDrive = false;
+
+			//reset buttons as they might have been pressed during drive
+			getAndResetButtons();
+		}
 
 		//if(true) showDebugMenu(status); else
 		if(status.errorCode != 0)
