@@ -6,27 +6,22 @@ The packet header looks like this:
 On the ESA 5000 there are three different packets. The following lists these
 packets exluding the `55 AA` header and the checksum.
 
-## Address `22` tuning
-- `00 01 02 03 04 05` (index in decimal)
-- `04 22 01 F2 F3 02`
-- bytes 0-3 `04 22 01 F2`: is the packet header (length, address, command, arg)
-- `F3 02` maximum allowed rounds per minute (little endian uint16_t)
-- with the default 8.5" wheel `0x02f3` translates to ~30.7km/h
-- `(0x02f3 * 0.2159 * pi * 60) / 1000 = 30.7256`
-
-## Address `28` motor controller information
-- `00 01 02 03 04 05 06 07 08 09 10 11 12` (index in decimal)
-- `0B 28 6D 09 00 07 00 00 00 00 00 00 61`
-- bytes 0-3 `0B 28 6D 09`: is the packet header (length, address, command, arg)
-- `00 07 00 00 00 00 00 00 61` (bytes 4-12) is the payload
-  - byte 4: `00` for normal mode and `02` for eco mode
-  - byte 5: `07` running, `08` before shutting down
-  - byte 6: `00` when lights are off, `01` when lights are on
-  - byte 7: ?
-  - byte 8-9: speed in meters/hour (little endian uint16_t), max speed is `07 4E` = 19975 m/h = 19.975 km/h
-  - byte 10: `01` after the button was pressed, `00` otherwise
-  - byte 11: error code (see e.g. https://elewheels.com/error-code-xiaomi-m365-scooter/)
-  - byte 12: state of charge in %
+## Address `22` set option/tuning
+- arg `7C`: turn eco mode on/off
+    - `04 22 01 7C 01 00`
+    - byte 4 `01` for on, `00` for off
+- arg `7D`: turn lock on/off
+    - `04 22 01 7D 01 00`
+    - byte 4 `01` for on, `00` for off
+- arg `F0`: turn light on/off
+    - `04 22 01 F0 01 00`
+    - byte 4 `01` for on, `00` for off
+- arg `F2`: set max speed
+    - `04 22 01 F2 F3 02`
+    - bytes 0-3 `04 22 01 F2`: is the packet header (length, address, command, arg)
+    - bytes 4-5 `F3 02` maximum allowed rounds per minute (little endian uint16_t)
+    - with the default 8.5" wheel `0x02f3` translates to ~30.7km/h
+    - `(0x02f3 * 0.2159 * pi * 60) / 1000 = 30.7256`
 
 ## Address `25` input information
 - `00 01 02 03 04 05 06 07 08` (index in decimal)
@@ -49,3 +44,17 @@ packets exluding the `55 AA` header and the checksum.
 - byte 10: ?
 - the packet to address `25` is sent four times, then the packet to address `27`
 is sent once, resulting in five packets one of them to `27`.
+
+## Address `28` motor controller information
+- `00 01 02 03 04 05 06 07 08 09 10 11 12` (index in decimal)
+- `0B 28 6D 09 00 07 00 00 00 00 00 00 61`
+- bytes 0-3 `0B 28 6D 09`: is the packet header (length, address, command, arg)
+- `00 07 00 00 00 00 00 00 61` (bytes 4-12) is the payload
+  - byte 4: `00` for normal mode and `02` for eco mode
+  - byte 5: `07` running, `08` before shutting down
+  - byte 6: `00` when lights are off, `01` when lights are on
+  - byte 7: ?
+  - byte 8-9: speed in meters/hour (little endian uint16_t), max speed is `07 4E` = 19975 m/h = 19.975 km/h
+  - byte 10: `01` after the button was pressed, `00` otherwise
+  - byte 11: error code (see e.g. https://elewheels.com/error-code-xiaomi-m365-scooter/)
+  - byte 12: state of charge in %
