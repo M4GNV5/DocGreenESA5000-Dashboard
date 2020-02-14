@@ -20,6 +20,14 @@ typedef struct
 	uint8_t errorCode;
 	uint8_t soc; //state of charge (battery %)
 	uint16_t speed; // meters per hour
+
+	uint32_t totalOperationTime;
+	uint32_t timeSinceBoot;
+	uint16_t voltage;
+	uint16_t current;
+
+	uint32_t mainboardVersion;
+	uint32_t odometer;
 } docgreen_status_t;
 
 uint16_t calculateChecksum(uint8_t *data)
@@ -48,6 +56,34 @@ void setMaxSpeed(uint8_t speed)
     RX_DISABLE;
     ScooterSerial.write(data, sizeof(data) / sizeof(uint8_t));
     RX_ENABLE;
+}
+
+static void setOption(uint8_t id, bool enabled)
+{
+	uint8_t data[] = {
+        0x55, 0xAA, 0x04, 0x22, 0x01, id,
+        enabled ? 0x01 : 0x00,
+		0x00,
+        0, 0, //checksum
+    };
+
+    *(uint16_t *)&data[8] = calculateChecksum(data + 2);
+
+    RX_DISABLE;
+    ScooterSerial.write(data, sizeof(data) / sizeof(uint8_t));
+    RX_ENABLE;
+}
+void setEcoMode(bool enabled)
+{
+	setOption(0x7C, enabled);
+}
+void setLock(bool enabled)
+{
+	setOption(0x7D, enabled);
+}
+void setLight(bool enabled)
+{
+	setOption(0xF0, enabled);
 }
 
 void transmitInputInfo(uint8_t throttle, uint8_t brake)
@@ -96,6 +132,40 @@ void transmitInputInfo(uint8_t throttle, uint8_t brake)
 	RX_ENABLE;
 }
 
+void parseDetailedInfo(docgreen_status_t *status, uint8_t *buff)
+{
+	if(buff[0] != 0x34) // expect length 52
+		return;
+
+	// XXX we assume our architecture uses LE order here
+	if(buff[3] == 0x00)
+	{
+		status->totalOperationTime = *(uint32_t *)&buff[4];
+		status->timeSinceBoot = *(uint32_t *)&buff[20];
+		status->voltage = *(uint16_t *)&buff[46];
+		status->current = *(uint16_t *)&buff[48];
+	}
+	else if(buff[3] == 0x28)
+	{
+		status->mainboardVersion = *(uint32_t *)&buff[10];
+		status->odometer = *(uint32_t *)&buff[34];
+	}
+}
+
+void parseMotorInfoPacket(docgreen_status_t *status, uint8_t *buff)
+{
+	if(buff[0] != 0x0b) // expect length 11
+		return;
+
+	status->ecoMode = buff[4] == 0x02;
+	status->shuttingDown = buff[5] == 0x08;
+	status->lights = buff[6] == 0x01;
+	status->buttonPress = buff[10] == 0x01;
+	status->errorCode = buff[11];
+	status->soc = buff[12];
+	status->speed = *(uint16_t *)&buff[8]; // XXX we assume our architecture uses LE order here
+}
+
 uint8_t readBlocking()
 {
 	while(!ScooterSerial.available())
@@ -134,13 +204,14 @@ bool receivePacket(docgreen_status_t *status)
 	if(actualChecksum != expectedChecksum)
 		return false;
 
-	status->ecoMode = buff[4] == 0x02;
-	status->shuttingDown = buff[5] == 0x08;
-	status->lights = buff[6] == 0x01;
-	status->buttonPress = buff[10] == 0x01;
-	status->errorCode = buff[11];
-	status->soc = buff[12];
-	status->speed = *(uint16_t *)&buff[8]; // XXX we assume our architecture uses LE order here
-
+	switch(addr)
+	{
+		case 0x11:
+			parseDetailedInfo(status, buff);
+			break;
+		case 0x28:
+			parseMotorInfoPacket(status, buff);
+			break;
+	}
 	return true;
 }
