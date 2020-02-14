@@ -132,6 +132,33 @@ void transmitInputInfo(uint8_t throttle, uint8_t brake)
 	RX_ENABLE;
 }
 
+void requestDetailedInfo1()
+{
+	uint8_t data[] = {
+		0x55, 0xAA, // start
+		0x04, 0x21, 0x03, 0x6A, // header
+		0x80, 0x04,
+		0xE9, 0xFE, // checksum
+    };
+
+    RX_DISABLE;
+    ScooterSerial.write(data, sizeof(data) / sizeof(uint8_t));
+    RX_ENABLE;
+}
+void requestDetailedInfo2()
+{
+	uint8_t data[] = {
+		0x55, 0xAA, // start
+		0x03, 0x23, 0x00, 0x31, // header
+		0x18,
+		0x90, 0xFF, // checksum
+    };
+
+    RX_DISABLE;
+    ScooterSerial.write(data, sizeof(data) / sizeof(uint8_t));
+    RX_ENABLE;
+}
+
 void parseDetailedInfo(docgreen_status_t *status, uint8_t *buff)
 {
 	if(buff[0] != 0x34) // expect length 52

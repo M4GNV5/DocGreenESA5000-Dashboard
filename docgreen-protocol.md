@@ -23,11 +23,20 @@ packets exluding the `55 AA` header and the checksum.
     - with the default 8.5" wheel `0x02f3` translates to ~30.7km/h
     - `(0x02f3 * 0.2159 * pi * 60) / 1000 = 30.7256`
 
-## Address `23` request detailed information
+## Address `21` request detailed information 1
+- `00 01 02 03 04 05` (index in decimal)
+- `04 21 03 6A 80 04`
+- requests detailed information with arg `00`
+- bytes 0-3 `04 21 03 6A`: is the packet header (length, address, command, arg)
+- byte 4: constant `80`, ? probably location or length of data to read
+- byte 5: constant `04`, ? probably location or length of data to read
+
+## Address `23` request detailed information 2
 - `00 01 02 03 04` (index in decimal)
 - `03 23 00 31 18`
+- requests detailed information with arg `28`
 - bytes 0-3 `03 23 00 31`: is the packet header (length, address, command, arg)
-- byte 4: ? probably location or length of data to read
+- byte 4: constant `18`, ? probably location or length of data to read
 
 ## Address `11` detailed information
 - arg `00`
