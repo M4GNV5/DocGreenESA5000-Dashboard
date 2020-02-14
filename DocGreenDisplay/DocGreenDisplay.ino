@@ -3,8 +3,10 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <stdint.h>
+
 #include "config.h"
 #include "icons.h"
+#include "protocol.h"
 
 #define THROTTLE_MIN 0x2C
 #define THROTTLE_MAX 0xC5
@@ -36,114 +38,6 @@ uint8_t pressedButtons = 0;
 
 bool isLocked = true;
 uint8_t password[] = {LOCK_PASSWORD};
-
-uint16_t calculateChecksum(uint8_t *data)
-{
-	uint8_t len = data[0] + 2;
-	uint16_t sum = 0;
-	for(int i = 0; i < len; i++)
-		sum += data[i];
-
-	sum ^= 0xFFFF;
-	return sum;
-}
-
-void transmitPacket(uint8_t throttle, uint8_t brake)
-{
-	static int counter = 0;
-
-	uint8_t fifthHeader[] = {
-		0x09, 0x27, 0x63, 0x07, 0x06,
-	};
-	uint8_t regularHeader[] = {
-		0x07, 0x25, 0x60, 0x05, 0x04,
-	};
-
-	uint8_t data[] = {
-		0, 0, 0, 0, 0, // header, will be either regularHeader or fifthHeader
-		throttle, // range 0x2C - 0xC5 
-		brake, // range 0x2C - 0xB5
-		0x00, 0x00, // ?
-		0x00, 0x04, // ?, only present on every fith package
-		0x00, 0x00, // checksum
-	};
-
-	uint8_t len;
-	if(counter == 4)
-	{
-		len = 13;
-		memcpy(data, fifthHeader, 5);
-
-		counter = 0;
-	}
-	else
-	{
-		len = 11;
-		memcpy(data, regularHeader, 5);
-
-		counter++;
-	}
-
-	// XXX we assume our architecture uses LE order here
-	*(uint16_t *)&data[len - 2] = calculateChecksum(data);
-
-	RX_DISABLE;
-	ScooterSerial.write(0x55);
-	ScooterSerial.write(0xAA);
-	ScooterSerial.write(data, len);
-	RX_ENABLE;
-}
-
-uint8_t readBlocking()
-{
-	while(!ScooterSerial.available())
-		delay(1);
-
-	return ScooterSerial.read();
-}
-bool receivePacket(docgreen_status_t *status)
-{
-	if(readBlocking() != 0x55)
-		return false;
-	if(readBlocking() != 0xAA)
-		return false;
-
-	uint8_t buff[256];
-
-	uint8_t len = readBlocking();
-	buff[0] = len;
-	if(len >= 256 - 4)
-		return false;
-
-	uint8_t addr = readBlocking();
-	buff[1] = addr;
-
-	if(addr != 0x28)
-		return false; // the packet is not for us
-
-	uint16_t sum = len + addr;
-	for(int i = 0; i < len; i++)
-	{
-		uint8_t curr = readBlocking();
-		buff[i + 2] = curr;
-		sum += curr;
-	}
-
-	uint16_t actualChecksum = (uint16_t)readBlocking() | ((uint16_t)readBlocking() << 8);
-	uint16_t expectedChecksum = calculateChecksum(buff);
-	if(actualChecksum != expectedChecksum)
-		return false;
-
-	status->ecoMode = buff[4] == 0x02;
-	status->shuttingDown = buff[5] == 0x08;
-	status->lights = buff[6] == 0x01;
-	status->buttonPress = buff[10] == 0x01;
-	status->errorCode = buff[11];
-	status->soc = buff[12];
-	status->speed = *(uint16_t *)&buff[8]; // XXX we assume our architecture uses LE order here
-
-	return true;
-}
 
 void detectButtonPress(bool brakeLever)
 {
@@ -363,20 +257,7 @@ void showTuningMenu(uint8_t button)
 
 	if(button & BUTTON_RIGHT)
 	{
-		uint8_t data[] = {
-			0x55, 0xAA, 0x04, 0x22, 0x01, 0xF2,
-			0, 0, //rpm
-			0, 0, //checksum
-		};
-
-		// XXX we assume our architecture uses LE order here
-		*(uint16_t *)&data[6] = (speed * 252) / 10;
-		*(uint16_t *)&data[8] = calculateChecksum(data + 2);
-
-		RX_DISABLE;
-		ScooterSerial.write(data, sizeof(data) / sizeof(uint8_t));
-		RX_ENABLE;
-
+		setMaxSpeed(speed);
 		configuredSpeed = speed;
 	}
 }
@@ -459,18 +340,19 @@ void showMainMenu(docgreen_status_t& status)
 			"intro",
 			"debug",
 		};
+		static const int menuCount = sizeof(menus) / sizeof(const char *);
 
 		if(button & BUTTON_DOWN)
 		{
 			menu++;
-			if(menu > 4)
+			if(menu >= menuCount)
 				menu = 0;
 		}
 		if(button & BUTTON_UP)
 		{
 			menu--;
 			if(menu < 0)
-				menu = 3;
+				menu = menuCount - 1;
 		}
 
 		display.setTextSize(1);
@@ -552,7 +434,7 @@ void loop()
 		throttle = map(throttle, THROTTLE_READ_MIN, THROTTLE_READ_MAX, THROTTLE_MIN, THROTTLE_MAX);
 		brake = map(brake, BRAKE_READ_MIN, BRAKE_READ_MAX, BRAKE_MIN, BRAKE_MAX);
 
-		transmitPacket(throttle, brake);
+		transmitInputInfo(throttle, brake);
 		lastTransmit = now;
 	}
 
