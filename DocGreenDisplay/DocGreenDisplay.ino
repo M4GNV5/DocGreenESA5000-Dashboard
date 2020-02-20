@@ -397,6 +397,15 @@ void setup()
 	display.setTextColor(SSD1306_WHITE);
 
 	showIntro();
+
+#if DEFAULT_MAX_SPEED != 20
+	// send default max speed 3 times, to make sure the packet isn't lost
+	setMaxSpeed(DEFAULT_MAX_SPEED);
+	delay(50);
+	setMaxSpeed(DEFAULT_MAX_SPEED);
+	delay(50);
+	setMaxSpeed(DEFAULT_MAX_SPEED);
+#endif
 }
 
 void loop()
@@ -479,6 +488,27 @@ void loop()
 			//reset buttons as they might have been pressed during drive
 			getAndResetButtons();
 		}
+
+#ifdef REENABLE_LIGHTS_AFTER_ERROR
+		static bool hadError = false;
+		static bool lightShouldBeOn = false;
+		if(status.errorCode != 0)
+		{
+			hadError = true;
+		}
+		else if(hadError)
+		{
+			// if the lights were on before turn on the lights after an error
+			if(lightShouldBeOn && !status.lights)
+				setLight(true);
+
+			hadError = false;
+		}
+		else if(status.lights != lightShouldBeOn)
+		{
+			lightShouldBeOn = status.lights;
+		}
+#endif
 
 		//if(true) showDebugMenu(status); else
 		if(status.errorCode != 0)
