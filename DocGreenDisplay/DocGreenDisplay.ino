@@ -13,17 +13,6 @@
 #define BRAKE_MIN 0x2C
 #define BRAKE_MAX 0xB5
 
-typedef struct
-{
-	bool ecoMode;
-	bool shuttingDown;
-	bool lights;
-	bool buttonPress;
-	uint8_t errorCode;
-	uint8_t soc; //state of charge (battery %)
-	uint16_t speed; // meters per hour
-} docgreen_status_t;
-
 Adafruit_SSD1306 display(128, 32, &Wire, -1);
 uint16_t lastThrottle = 0;
 uint16_t lastBrake = 0;
@@ -210,35 +199,76 @@ void showIntro()
 	}
 }
 
+void routinelyRequestDetailedInfo()
+{
+	static unsigned lastRequest = 0;
+	if(lastRequest + 200 > millis())
+	{
+		requestDetailedInfo1();
+	}
+	else if(lastRequest + 400 > millis())
+	{
+		requestDetailedInfo2();
+		lastRequest = millis();
+	}
+}
+
+void printCommaValue(uint32_t val, uint32_t unit)
+{
+	// when unit = 100 print 314cm as 3.1m or 3736cV as 37.3V etc.
+	// when unit = 1000 print 7813m as 7.8km etc.
+	display.print(val / unit);
+	display.print(".");
+	display.println((val / (unit / 10)) % 10);
+}
+
 void showInfoScreen(docgreen_status_t& status)
 {
-	display.setTextSize(1);
-	display.println("SPEED");
-	uint8_t speed = status.speed / 1000;
-	if(status.speed % 1000 >= 500)
-		speed++;
-	display.setTextSize(2);
-	display.println(speed);
+	routinelyRequestDetailedInfo();
 
-	display.setCursor(0, display.getCursorY() + 10);
-
-	display.setTextSize(1);
 	display.println("SOC");
-	display.setTextSize(2);
-	if(status.soc == 100)
-		display.println("FU");
-	else
-		display.println(status.soc);
+	display.println(status.soc);
+	display.setCursor(0, display.getCursorY() + 5);
 
-	display.setTextSize(1);
+	display.println("MODE");
+	display.print(status.ecoMode ? "E" : "S");
+	display.println(status.lights ? " N" : " D");
+	display.setCursor(0, display.getCursorY() + 5);
 
-	display.setCursor(0, display.getCursorY() + 10);
-	display.println(status.ecoMode ? "ECO" : "SPORT");
+	display.println("TIME");
+	display.println(status.timeSinceBoot);
+	display.setCursor(0, display.getCursorY() + 5);
 
-	display.setCursor(0, display.getCursorY() + 3);
-	display.println(status.lights ? "NIGHT" : "DAY");
+	display.println("ODO");
+	printCommaValue(status.odometer, 1000);
+}
 
-	// TODO show milage etc.
+void showStatsScreen(docgreen_status_t& status)
+{
+	routinelyRequestDetailedInfo();
+
+	display.println("VOLT");
+	printCommaValue(status.voltage, 100);
+	display.setCursor(0, display.getCursorY() + 2);
+
+	display.println("AMPS");
+	printCommaValue(status.current, 100);
+	display.setCursor(0, display.getCursorY() + 2);
+
+	display.println("ODO");
+	printCommaValue(status.odometer, 1000);
+	display.setCursor(0, display.getCursorY() + 2);
+
+	display.println("TTIME");
+	display.print(status.totalOperationTime / (60 * 60)); // hours
+	display.print(":");
+	display.print((status.totalOperationTime / 60) % 60); // minutes
+	display.print(":")
+	display.println(status.totalOperationTime % 60); // seconds
+	display.setCursor(0, display.getCursorY() + 2);
+
+	display.println("VERS");
+	display.println(status.mainboardVersion, 16);
 }
 
 void showTuningMenu(uint8_t button)
@@ -274,112 +304,135 @@ void showTuningMenu(uint8_t button)
 	}
 }
 
-void showDebugScreen(docgreen_status_t& status)
+void genericSelectionMenu(const char *title, uint8_t button,
+	const char *options, int count, int *selection, bool *inMenu)
 {
+	if(!*inMenu && button & BUTTON_RIGHT)
+		*inMenu = true;
+	if(*inMenu && button & BUTTON_LEFT)
+		*inMenu = false;
+
+	if(*inMenu)
+		return;
+
+	int curr = *selection;
+	if(button & BUTTON_DOWN)
+	{
+		curr++;
+		if(curr >= count)
+			curr = 0;
+	}
+	if(button & BUTTON_UP)
+	{
+		curr--;
+		if(curr < 0)
+			curr = count - 1;
+	}
+	*selection = curr;
+
 	display.setTextSize(1);
-	display.println("DEBUG");
-	display.println();
-	display.println("soc");
-	display.println(status.soc);
-	display.println("gas");
-	display.println(lastThrottle);
-	display.println("brake");
-	display.println(lastBrake);
+	display.println(title);
+	display.setCursor(0, display.getCursorY() + 5);
+
+	for(int i = 0; i < count; i++)
+	{
+		if(i == curr)
+		{
+			display.setTextColor(SSD1306_BLACK, SSD1306_WHITE);
+			display.println(options[i]);
+			display.setTextColor(SSD1306_WHITE, SSD1306_BLACK);
+		}
+		else
+		{
+			display.println(options[i]);
+		}
+	}
 }
 
-void showLockOptionMenu(uint8_t button)
+void showConfigMenu(docgreen_status_t& status, uint8_t button)
 {
-	if(button & BUTTON_RIGHT)
-		isLocked = true;
-
-	display.setTextSize(1);
-	display.println("lock?");
-}
-
-void showIntroMenu(uint8_t button)
-{
-	if(button & BUTTON_RIGHT)
-		showIntro();
-
-	display.setTextSize(1);
-	display.println("show\nintro?");
-}
-
-void showMainMenu(docgreen_status_t& status)
-{
-	uint8_t button = getAndResetButtons();
-	static bool inMenu = true;
 	static int menu = 0;
+	static bool inMenu = true;
 
-	if(!inMenu && button & BUTTON_RIGHT)
-	{
-		inMenu = true;
-		button = 0;
-	}
-	if(inMenu && button & BUTTON_LEFT)
-	{
-		inMenu = false;
-		button = 0;
-	}
+	static const char *menus[] = {
+		"tune",
+		"light",
+		"eco",
+		"lock",
+	};
+	genericSelectionMenu("CONF", button, menus,
+		sizeof(menus) / sizeof(const char *), &menu, &inMenu);
 
 	if(inMenu)
 	{
 		switch(menu)
 		{
 			case 0:
-				showInfoScreen(status);
+				showTuningMenu();
 				break;
 			case 1:
-				showLockOptionMenu(button);
+				setLight(!status.lights);
+				inMenu = false;
 				break;
 			case 2:
-				showTuningMenu(button);
+				setEcoMode(!status.ecoMode);
+				inMenu = false;
 				break;
 			case 3:
-				showIntroMenu(button);
-				break;
-			case 4:
-				showDebugScreen(status);
+				;
+				// TODO should we use this lock functionality
+				//  for our lock instead of breaking?
+				// what does it even do?
+				static bool isEcuLocked = false;
+				isEcuLocked = !isEcuLocked;
+				setLock(isEcuLocked);
+				inMenu = false;
 				break;
 		}
 	}
-	else
+}
+
+void showMainMenu(docgreen_status_t& status)
+{
+	static int menu = 0;
+	static bool inMenu = true;
+	uint8_t button = getAndResetButtons();
+
+	static const char *menus[] = {
+		"info",
+		"stats",
+		"config",
+		"lock",
+		"intro",
+	};
+	genericSelectionMenu("MENU", button, menus,
+		sizeof(menus) / sizeof(const char *), &menu, &inMenu);
+
+	if(inMenu)
 	{
-		static const char *menus[] = {
-			"info",
-			"lock",
-			"tune",
-			"intro",
-			"debug",
-		};
-		static const int menuCount = sizeof(menus) / sizeof(const char *);
+		uint8_t buton = getAndResetButtons();
+		if(button & BUTTON_LEFT)
+			inMenu = false;
 
-		if(button & BUTTON_DOWN)
+		switch(menu)
 		{
-			menu++;
-			if(menu >= menuCount)
-				menu = 0;
-		}
-		if(button & BUTTON_UP)
-		{
-			menu--;
-			if(menu < 0)
-				menu = menuCount - 1;
-		}
-
-		display.setTextSize(1);
-		display.println("MENU");
-		display.setCursor(0, display.getCursorY() + 5);
-
-		for(int i = 0; i < sizeof(menus) / sizeof(const char *); i++)
-		{
-			if(i == menu)
-				display.setTextColor(SSD1306_BLACK, SSD1306_WHITE);
-
-			display.println(menus[i]);
-
-			if(i == menu)
-				display.setTextColor(SSD1306_WHITE, SSD1306_BLACK);
+			case 0:
+				showInfoScreen(status);
+				break;
+			case 1:
+				showStatsScreen(status);
+				break;
+			case 2:
+				showConfigMenu(status, button);
+				break;
+			case 3:
+				isLocked = true;
+				inMenu = false;
+				break;
+			case 4:
+				showIntro();
+				inMenu = false;
+				break;
 		}
 	}
 }
@@ -459,7 +512,7 @@ void loop()
 		lastTransmit = now;
 	}
 
-	docgreen_status_t status;
+	static docgreen_status_t status;
 	if(ScooterSerial.available() && receivePacket(&status))
 	{
 		static bool hadButton = false;
