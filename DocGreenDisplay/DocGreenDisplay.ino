@@ -202,13 +202,15 @@ void showIntro()
 void routinelyRequestDetailedInfo()
 {
 	static unsigned lastRequest = 0;
-	if(lastRequest + 200 > millis())
+	static bool sendInfo2 = false;
+	if(lastRequest + 200 < millis())
 	{
-		requestDetailedInfo1();
-	}
-	else if(lastRequest + 400 > millis())
-	{
-		requestDetailedInfo2();
+		if(sendInfo2)
+			requestDetailedInfo1();
+		else
+			requestDetailedInfo2();
+
+		sendInfo2 = !sendInfo2;
 		lastRequest = millis();
 	}
 }
@@ -225,6 +227,8 @@ void printCommaValue(uint32_t val, uint32_t unit)
 void showInfoScreen(docgreen_status_t& status)
 {
 	routinelyRequestDetailedInfo();
+
+	display.setTextSize(1);
 
 	display.println("SOC");
 	display.println(status.soc);
@@ -247,25 +251,27 @@ void showStatsScreen(docgreen_status_t& status)
 {
 	routinelyRequestDetailedInfo();
 
+	display.setTextSize(1);
+
 	display.println("VOLT");
 	printCommaValue(status.voltage, 100);
-	display.setCursor(0, display.getCursorY() + 2);
+	display.setCursor(0, display.getCursorY() + 5);
 
 	display.println("AMPS");
 	printCommaValue(status.current, 100);
-	display.setCursor(0, display.getCursorY() + 2);
+	display.setCursor(0, display.getCursorY() + 5);
 
 	display.println("ODO");
 	printCommaValue(status.odometer, 1000);
-	display.setCursor(0, display.getCursorY() + 2);
+	display.setCursor(0, display.getCursorY() + 5);
 
 	display.println("TTIME");
 	display.print(status.totalOperationTime / (60 * 60)); // hours
 	display.print(":");
 	display.print((status.totalOperationTime / 60) % 60); // minutes
-	display.print(":")
+	display.print(":");
 	display.println(status.totalOperationTime % 60); // seconds
-	display.setCursor(0, display.getCursorY() + 2);
+	display.setCursor(0, display.getCursorY() + 5);
 
 	display.println("VERS");
 	display.println(status.mainboardVersion, 16);
@@ -273,7 +279,7 @@ void showStatsScreen(docgreen_status_t& status)
 
 void showTuningMenu(uint8_t button)
 {
-	static uint32_t configuredSpeed = 20;
+	static uint32_t configuredSpeed = DEFAULT_MAX_SPEED;
 	static uint32_t speed = 20;
 
 	display.setTextSize(1);
@@ -305,7 +311,7 @@ void showTuningMenu(uint8_t button)
 }
 
 void genericSelectionMenu(const char *title, uint8_t button,
-	const char *options, int count, int *selection, bool *inMenu)
+	const char **options, int count, int *selection, bool *inMenu)
 {
 	if(!*inMenu && button & BUTTON_RIGHT)
 		*inMenu = true;
@@ -349,17 +355,19 @@ void genericSelectionMenu(const char *title, uint8_t button,
 	}
 }
 
-void showConfigMenu(docgreen_status_t& status, uint8_t button)
+bool showConfigMenu(docgreen_status_t& status, uint8_t button)
 {
 	static int menu = 0;
-	static bool inMenu = true;
-
+	static bool inMenu = false;
 	static const char *menus[] = {
 		"tune",
 		"light",
 		"eco",
 		"lock",
 	};
+
+	bool exitConfigMenu = !inMenu && button & BUTTON_LEFT;
+
 	genericSelectionMenu("CONF", button, menus,
 		sizeof(menus) / sizeof(const char *), &menu, &inMenu);
 
@@ -368,17 +376,20 @@ void showConfigMenu(docgreen_status_t& status, uint8_t button)
 		switch(menu)
 		{
 			case 0:
-				showTuningMenu();
+				showTuningMenu(button);
 				break;
 			case 1:
+				delay(50);
 				setLight(!status.lights);
 				inMenu = false;
 				break;
 			case 2:
+				delay(50);
 				setEcoMode(!status.ecoMode);
 				inMenu = false;
 				break;
 			case 3:
+				delay(50);
 				;
 				// TODO should we use this lock functionality
 				//  for our lock instead of breaking?
@@ -390,6 +401,8 @@ void showConfigMenu(docgreen_status_t& status, uint8_t button)
 				break;
 		}
 	}
+
+	return !exitConfigMenu;
 }
 
 void showMainMenu(docgreen_status_t& status)
@@ -398,10 +411,16 @@ void showMainMenu(docgreen_status_t& status)
 	static bool inMenu = true;
 	uint8_t button = getAndResetButtons();
 
+	if(inMenu && menu == 2)
+	{
+		inMenu = showConfigMenu(status, button);
+		return;
+	}
+
 	static const char *menus[] = {
 		"info",
 		"stats",
-		"config",
+		"conf",
 		"lock",
 		"intro",
 	};
@@ -410,10 +429,6 @@ void showMainMenu(docgreen_status_t& status)
 
 	if(inMenu)
 	{
-		uint8_t buton = getAndResetButtons();
-		if(button & BUTTON_LEFT)
-			inMenu = false;
-
 		switch(menu)
 		{
 			case 0:
@@ -423,7 +438,7 @@ void showMainMenu(docgreen_status_t& status)
 				showStatsScreen(status);
 				break;
 			case 2:
-				showConfigMenu(status, button);
+				// handeled above
 				break;
 			case 3:
 				isLocked = true;

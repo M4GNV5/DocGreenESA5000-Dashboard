@@ -213,19 +213,15 @@ bool receivePacket(docgreen_status_t *status)
 
 	uint8_t len = readBlocking();
 	buff[0] = len;
-	if(len >= 256 - 4)
+	if(len >= sizeof(buff) - 4)
 		return false;
 
 	uint8_t addr = readBlocking();
 	buff[1] = addr;
 
-	if(addr != 0x28)
-		return false; // the packet is not for us
-
 	for(int i = 0; i < len; i++)
 	{
-		uint8_t curr = readBlocking();
-		buff[i + 2] = curr;
+		buff[i + 2] = readBlocking();
 	}
 
 	uint16_t actualChecksum = (uint16_t)readBlocking() | ((uint16_t)readBlocking() << 8);
