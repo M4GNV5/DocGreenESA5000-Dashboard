@@ -140,6 +140,18 @@ void showLockMenu(docgreen_status_t& status)
 	static int index = 0;
 	static bool failed = false;
 
+	static unsigned lastToggle = 0;
+	if(status.speed > 500 && lastToggle + 500 < millis())
+	{
+		setLight(!status.lights);
+		lastToggle = millis();
+	}
+	else if(status.lights && lastToggle != 0)
+	{
+		setLight(false);
+		lastToggle = 0;
+	}
+
 	display.setTextSize(1);
 	display.println("LOCK");
 
