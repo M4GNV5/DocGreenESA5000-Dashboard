@@ -130,15 +130,19 @@ void showLockMenu(docgreen_status_t& status)
 	static bool failed = false;
 
 	static unsigned lastToggle = 0;
-	if(status.speed > 500 && lastToggle + 500 < millis())
+	if(lastToggle == 0)
+	{
+		setLock(true);
+		delay(50);
+		setLock(true);
+		delay(50);
+		setLock(true);
+	}
+
+	if(status.speed > 200 && lastToggle + 3000 < millis())
 	{
 		setLight(!status.lights);
 		lastToggle = millis();
-	}
-	else if(status.lights && lastToggle != 0)
-	{
-		setLight(false);
-		lastToggle = 0;
 	}
 
 	display.setTextSize(1);
@@ -176,6 +180,13 @@ void showLockMenu(docgreen_status_t& status)
 	{
 		display.setCursor(0, display.getCursorY() + 10);
 		display.println("HELLO");
+
+		lastToggle = 0;
+		setLock(false);
+		delay(50);
+		setLock(false);
+		delay(50);
+		setLock(false);
 	}
 	else
 	{
@@ -390,10 +401,6 @@ bool showConfigMenu(docgreen_status_t& status, uint8_t button)
 				break;
 			case 3:
 				delay(50);
-				;
-				// TODO should we use this lock functionality
-				//  for our lock instead of breaking?
-				// what does it even do?
 				static bool isEcuLocked = false;
 				isEcuLocked = !isEcuLocked;
 				setLock(isEcuLocked);
@@ -507,17 +514,6 @@ void loop()
 			// lever makes the scooter brake with the maximum power on the
 			// electrical brake, however that feels very harsh and dangerous
 			brake = map(40, 0, 100, THROTTLE_READ_MIN, THROTTLE_READ_MAX);
-		}
-		if(isLocked)
-		{
-			throttle = THROTTLE_READ_MIN;
-
-			// if we set brake to max from boot up the ESC thinks the brake
-			// sensor is broken
-			if(millis() > 5000)
-				brake = BRAKE_READ_MAX;
-			else
-				brake = BRAKE_READ_MIN;
 		}
 
 		throttle = map(throttle, THROTTLE_READ_MIN, THROTTLE_READ_MAX, THROTTLE_MIN, THROTTLE_MAX);
