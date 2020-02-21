@@ -137,9 +137,11 @@ void showLockMenu(docgreen_status_t& status)
 		setLock(true);
 		delay(50);
 		setLock(true);
+
+		lastToggle = 1;
 	}
 
-	if(status.speed > 200 && lastToggle + 3000 < millis())
+	if(status.speed > 100 && lastToggle + 400 < millis())
 	{
 		setLight(!status.lights);
 		lastToggle = millis();
