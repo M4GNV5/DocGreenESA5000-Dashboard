@@ -26,7 +26,7 @@ typedef struct
 	uint32_t totalOperationTime;
 	uint32_t timeSinceBoot;
 	uint16_t voltage;
-	uint16_t current;
+	int16_t current;
 
 	uint32_t mainboardVersion;
 	uint32_t odometer;
@@ -134,13 +134,26 @@ void transmitInputInfo(uint8_t throttle, uint8_t brake)
 	RX_ENABLE;
 }
 
+void sendBleConnected()
+{
+	uint8_t data[] = {
+		0x55, 0xAA, // start
+		0x06, 0xF4, 0x06, 0x30,
+		0x1C, 0x81, 0x18, 0xB5
+    };
+
+    RX_DISABLE;
+    ScooterSerial.write(data, sizeof(data) / sizeof(uint8_t));
+    RX_ENABLE;
+}
+
 void requestDetailedInfo1()
 {
 	uint8_t data[] = {
 		0x55, 0xAA, // start
-		0x04, 0x21, 0x03, 0x6A, // header
-		0x80, 0x04,
-		0xE9, 0xFE, // checksum
+		0x07, 0x25, 0x64, 0x37,
+		0x32, 0x03, 0x28, 0x29, 0x00,
+		0xB2, 0xFE // checksum
     };
 
     RX_DISABLE;
@@ -151,9 +164,9 @@ void requestDetailedInfo2()
 {
 	uint8_t data[] = {
 		0x55, 0xAA, // start
-		0x03, 0x23, 0x00, 0x31, // header
-		0x18,
-		0x90, 0xFF, // checksum
+		0x07, 0x25, 0x64, 0x1F,
+		0x32, 0x03, 0x28, 0x29, 0x00,
+		0xCA, 0xFE // checksum
     };
 
     RX_DISABLE;
@@ -172,7 +185,7 @@ void parseDetailedInfo(docgreen_status_t *status, uint8_t *buff)
 		status->totalOperationTime = *(uint32_t *)&buff[4];
 		status->timeSinceBoot = *(uint32_t *)&buff[20];
 		status->voltage = *(uint16_t *)&buff[46];
-		status->current = *(uint16_t *)&buff[48];
+		status->current = *(int16_t *)&buff[48];
 	}
 	else if(buff[3] == 0x28)
 	{
