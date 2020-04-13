@@ -15,6 +15,12 @@
 
 typedef struct
 {
+	// controlling what is sent to the controller
+	bool enableStatsRequests;
+	uint8_t throttle;
+	uint8_t brake;
+
+	// data received from the controller
 	bool ecoMode;
 	bool shuttingDown;
 	bool lights;
@@ -23,13 +29,15 @@ typedef struct
 	uint8_t soc; //state of charge (battery %)
 	uint16_t speed; // meters per hour
 
-	uint32_t totalOperationTime;
-	uint32_t timeSinceBoot;
-	uint16_t voltage;
-	int16_t current;
+	uint32_t totalOperationTime; // in seconds
+	uint32_t timeSinceBoot; // in seconds
+	uint16_t voltage; // in 1/10 V
+	int16_t current; // in 1/10 A
 
-	uint32_t mainboardVersion;
-	uint32_t odometer;
+	uint32_t mainboardVersion; // should be 0x0003027d
+	uint32_t odometer; // in meter
+
+	int8_t temperature; // 1/10 degree celsius
 } docgreen_status_t;
 
 uint16_t calculateChecksum(uint8_t *data)
@@ -88,49 +96,86 @@ void setLight(bool enabled)
 	setOption(0xF0, enabled);
 }
 
-void transmitInputInfo(uint8_t throttle, uint8_t brake)
+const uint8_t regularInputPacket[] = {
+	0x07, 0x25, 0x60, 0x05, //header
+	0x04,
+	0x00, // throttle
+	0x00, // brake
+	0x00, 0x00,
+};
+const uint8_t regularInputPacket2[] = {
+	0x09, 0x27, 0x63, 0x07, //header
+	0x06,
+	0x00, // throttle
+	0x00, // brake
+	0x00, 0x00,
+	0x00, 0x04,
+};
+const uint8_t detailRequestInputPacket[] = {
+	0x07, 0x25, 0x64, // header
+	0x37, 0x32, //request id (can be 37 32, 1F 32, 1F 1C or BE 06)
+	0x03,
+	0x28, // throttle
+	0x29, // brake
+	0x00,
+};
+void transmitInputInfo(docgreen_status_t& status)
 {
 	static int counter = 0;
+	uint8_t data[sizeof(regularInputPacket2) + 2];
 
-	uint8_t fifthHeader[] = {
-		0x09, 0x27, 0x63, 0x07, 0x06,
-	};
-	uint8_t regularHeader[] = {
-		0x07, 0x25, 0x60, 0x05, 0x04,
-	};
-
-	uint8_t data[] = {
-		0, 0, 0, 0, 0, // header, will be either regularHeader or fifthHeader
-		throttle, // range 0x2C - 0xC5 
-		brake, // range 0x2C - 0xB5
-		0x00, 0x00, // ?
-		0x00, 0x04, // ?, only present on every fith package
-		0x00, 0x00, // checksum
-	};
-
-	uint8_t len;
-	if(counter == 4)
+	if(counter > 5)
 	{
-		len = 13;
-		memcpy(data, fifthHeader, 5);
+		memcpy(data, detailRequestInputPacket, sizeof(detailRequestInputPacket));
+		data[6] = status.throttle;
+		data[7] = status.brake;
 
-		counter = 0;
+		// XXX: we never request detailed info 3 as it does not seem to hold useful information
+		static int detailedReqCounter = 0;
+		if(detailedReqCounter == 0)
+		{
+			data[3] = 0x37; // request detailed info 1
+			data[4] = 0x32;
+			detailedReqCounter++;
+		}
+		else if(detailedReqCounter == 1)
+		{
+			data[3] = 0x1F; // request detailed info 2
+			data[4] = 0x32;
+			detailedReqCounter++;
+		}
+		else
+		{
+			data[3] = 0xBE; // request temperature
+			data[4] = 0x06;
+			detailedReqCounter = 0;
+		}
+	}
+	else if(counter == 4)
+	{
+		memcpy(data, regularInputPacket2, sizeof(regularInputPacket2));
+		data[5] = status.throttle;
+		data[6] = status.brake;
 	}
 	else
 	{
-		len = 11;
-		memcpy(data, regularHeader, 5);
-
-		counter++;
+		memcpy(data, regularInputPacket, sizeof(regularInputPacket));
+		data[5] = status.throttle;
+		data[6] = status.brake;
 	}
 
-	// XXX we assume our architecture uses LE order here
-	*(uint16_t *)&data[len - 2] = calculateChecksum(data);
+	if(counter > 5 || (counter > 4 && !status.enableStatsRequests))
+		counter = 0;
+	else
+		counter++;
+
+	uint8_t len = data[0] + 2;
+	*(uint16_t *)&data[len] = calculateChecksum(data);
 
 	RX_DISABLE;
 	ScooterSerial.write(0x55);
 	ScooterSerial.write(0xAA);
-	ScooterSerial.write(data, len);
+	ScooterSerial.write(data, len + 2);
 	RX_ENABLE;
 }
 
@@ -140,33 +185,6 @@ void sendBleConnected()
 		0x55, 0xAA, // start
 		0x06, 0xF4, 0x06, 0x30,
 		0x1C, 0x81, 0x18, 0xB5
-    };
-
-    RX_DISABLE;
-    ScooterSerial.write(data, sizeof(data) / sizeof(uint8_t));
-    RX_ENABLE;
-}
-
-void requestDetailedInfo1()
-{
-	uint8_t data[] = {
-		0x55, 0xAA, // start
-		0x07, 0x25, 0x64, 0x37,
-		0x32, 0x03, 0x28, 0x29, 0x00,
-		0xB2, 0xFE // checksum
-    };
-
-    RX_DISABLE;
-    ScooterSerial.write(data, sizeof(data) / sizeof(uint8_t));
-    RX_ENABLE;
-}
-void requestDetailedInfo2()
-{
-	uint8_t data[] = {
-		0x55, 0xAA, // start
-		0x07, 0x25, 0x64, 0x1F,
-		0x32, 0x03, 0x28, 0x29, 0x00,
-		0xCA, 0xFE // checksum
     };
 
     RX_DISABLE;
@@ -192,6 +210,16 @@ void parseDetailedInfo(docgreen_status_t *status, uint8_t *buff)
 		status->mainboardVersion = *(uint32_t *)&buff[10];
 		status->odometer = *(uint32_t *)&buff[34];
 	}
+}
+
+void parseTemperatureInfo(docgreen_status_t *status, uint8_t *buff)
+{
+	if(buff[0] != 0x08) // expect length 7
+		return;
+	if(buff[2] != 0x07) // check if this is a temperature package
+		return;
+
+	status->temperature = buff[4];
 }
 
 void parseMotorInfoPacket(docgreen_status_t *status, uint8_t *buff)
@@ -246,6 +274,9 @@ bool receivePacket(docgreen_status_t *status)
 	{
 		case 0x11:
 			parseDetailedInfo(status, buff);
+			break;
+		case 0x25:
+			parseTemperatureInfo(status, buff);
 			break;
 		case 0x28:
 			parseMotorInfoPacket(status, buff);

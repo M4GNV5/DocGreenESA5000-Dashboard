@@ -212,48 +212,45 @@ void showIntro()
 	}
 }
 
-void routinelyRequestDetailedInfo()
-{
-	static unsigned lastRequest = 0;
-	static bool sendInfo2 = false;
-	if(lastRequest + 200 < millis())
-	{
-		if(sendInfo2)
-			requestDetailedInfo1();
-		else
-			requestDetailedInfo2();
-
-		sendInfo2 = !sendInfo2;
-		lastRequest = millis();
-	}
-}
-
-void printCommaValue(uint32_t val, uint32_t unit)
+void printCommaValue(int32_t val, int32_t unit)
 {
 	// when unit = 100 print 314cm as 3.1m or 3736cV as 37.3V etc.
 	// when unit = 1000 print 7813m as 7.8km etc.
+	int32_t afterComma = (val / (unit / 10)) % 10;
+	if(afterComma < 0)
+		afterComma = -afterComma;
+
 	display.print(val / unit);
 	display.print(".");
-	display.println((val / (unit / 10)) % 10);
+	display.println(afterComma);
 }
 
 void showInfoScreen(docgreen_status_t& status)
 {
-	routinelyRequestDetailedInfo();
-
 	display.setTextSize(1);
 
 	display.println("SOC");
-	display.println(status.soc);
+	display.setTextColor(2);
+	if(status.soc == 100)
+		display.println("FU");
+	else
+		display.println(status.soc);
+	display.setTextColor(1);
 	display.setCursor(0, display.getCursorY() + 5);
 
 	display.println("MODE");
+	display.setTextColor(2);
 	display.print(status.ecoMode ? "E" : "S");
 	display.println(status.lights ? " N" : " D");
+	display.setTextColor(1);
 	display.setCursor(0, display.getCursorY() + 5);
 
 	display.println("TIME");
-	display.println(status.timeSinceBoot);
+	uint32_t now = millis();
+	display.print(now / 60000);
+	display.println("m");
+	display.print((now / 1000) % 60);
+	display.println("s");
 	display.setCursor(0, display.getCursorY() + 5);
 
 	display.println("ODO");
@@ -262,8 +259,6 @@ void showInfoScreen(docgreen_status_t& status)
 
 void showStatsScreen(docgreen_status_t& status)
 {
-	routinelyRequestDetailedInfo();
-
 	display.setTextSize(1);
 
 	display.println("VOLT");
@@ -274,16 +269,19 @@ void showStatsScreen(docgreen_status_t& status)
 	printCommaValue(status.current, 100);
 	display.setCursor(0, display.getCursorY() + 5);
 
+	display.println("TEMP");
+	printCommaValue(status.temperature, 10);
+	display.setCursor(0, display.getCursorY() + 5);
+
 	display.println("ODO");
 	printCommaValue(status.odometer, 1000);
 	display.setCursor(0, display.getCursorY() + 5);
 
 	display.println("TTIME");
 	display.print(status.totalOperationTime / (60 * 60)); // hours
-	display.print(":");
+	display.println("h");
 	display.print((status.totalOperationTime / 60) % 60); // minutes
-	display.print(":");
-	display.println(status.totalOperationTime % 60); // seconds
+	display.println("m");
 	display.setCursor(0, display.getCursorY() + 5);
 
 	display.println("VERS");
@@ -293,7 +291,7 @@ void showStatsScreen(docgreen_status_t& status)
 void showTuningMenu(uint8_t button)
 {
 	static uint32_t configuredSpeed = DEFAULT_MAX_SPEED;
-	static uint32_t speed = 20;
+	static uint32_t speed = DEFAULT_MAX_SPEED;
 
 	display.setTextSize(1);
 	display.println("max");
@@ -487,6 +485,10 @@ void setup()
 
 void loop()
 {
+	static docgreen_status_t status = {
+		.enableStatsRequests = true,
+	};
+
 	static uint32_t lastTransmit = 0;
 	uint32_t now = millis();
 	if(now - lastTransmit > TRANSMIT_INTERVAL)
@@ -521,11 +523,12 @@ void loop()
 		throttle = map(throttle, THROTTLE_READ_MIN, THROTTLE_READ_MAX, THROTTLE_MIN, THROTTLE_MAX);
 		brake = map(brake, BRAKE_READ_MIN, BRAKE_READ_MAX, BRAKE_MIN, BRAKE_MAX);
 
-		transmitInputInfo(throttle, brake);
+		status.throttle = throttle;
+		status.brake = brake;
+		transmitInputInfo(status);
 		lastTransmit = now;
 	}
 
-	static docgreen_status_t status;
 	if(ScooterSerial.available() && receivePacket(&status))
 	{
 		static bool hadButton = false;
@@ -546,10 +549,12 @@ void loop()
 		if(!inDrive && status.speed > 5000)
 		{
 			inDrive = true;
+			status.enableStatsRequests = false;
 		}
 		else if(inDrive && status.speed < 1000)
 		{
 			inDrive = false;
+			status.enableStatsRequests = true;
 
 			//reset buttons as they might have been pressed during drive
 			getAndResetButtons();
