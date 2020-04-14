@@ -20,10 +20,16 @@ and contents are different.
 - [DocGreenDisplay](DocGreenDisplay/): a replacement for the stock head unit using an arduino nano and
 a 128x32 OLED display.
 
+## Dashboard Wiring
+
+Bus wiring is taken from the [m365_dashboard](https://github.com/augisbud/m365_dashboard) repository.
+The rest is mostly straightforward wiring of inputs to the Arduino.
+
+![](./circuit.svg)
+
 ## Further Reading
 
-- https://github.com/augisbud/m365_dashboard you will need the circuit listed
-under "Physical Connections" if you want to use DocGreenDisplay.
+- https://github.com/augisbud/m365_dashboard
 - https://github.com/etransport/ninebot-docs/wiki/protocol M365 protocol documentation.
 - https://github.com/camcamfresh/Xiaomi-M365-BLE-Controller-Replacement
 - https://scooterhacking.org/
