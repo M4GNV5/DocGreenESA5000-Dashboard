@@ -520,7 +520,11 @@ void loop()
 			// XXX: in the orginal configuration pulling the mechanical brake
 			// lever makes the scooter brake with the maximum power on the
 			// electrical brake, however that feels very harsh and dangerous
-			brake = map(40, 0, 100, THROTTLE_READ_MIN, THROTTLE_READ_MAX);
+			uint16_t minBrake = map(40, 0, 100, THROTTLE_READ_MIN, THROTTLE_READ_MAX);
+
+			// allow the user to manually brake >40%
+			if(minBrake > brake)
+				brake = minBrake;
 		}
 
 		throttle = map(throttle, THROTTLE_READ_MIN, THROTTLE_READ_MAX, THROTTLE_MIN, THROTTLE_MAX);
