@@ -230,19 +230,28 @@ void showInfoScreen(docgreen_status_t& status)
 	display.setTextSize(1);
 
 	display.println("SOC");
-	display.setTextColor(2);
+	display.setTextSize(2);
 	if(status.soc == 100)
+	{
 		display.println("FU");
-	else
+	}
+	else if(status.soc < 10)
+	{
+		display.print("0");
 		display.println(status.soc);
-	display.setTextColor(1);
+	}
+	else
+	{
+		display.println(status.soc);
+	}
+	display.setTextSize(1);
 	display.setCursor(0, display.getCursorY() + 5);
 
 	display.println("MODE");
-	display.setTextColor(2);
+	display.setTextSize(2);
 	display.print(status.ecoMode ? "E" : "S");
 	display.println(status.lights ? " N" : " D");
-	display.setTextColor(1);
+	display.setTextSize(1);
 	display.setCursor(0, display.getCursorY() + 5);
 
 	display.println("TIME");
@@ -326,9 +335,6 @@ void genericSelectionMenu(const char *title, uint8_t button,
 {
 	if(!*inMenu && button & BUTTON_RIGHT)
 		*inMenu = true;
-	if(*inMenu && button & BUTTON_LEFT)
-		*inMenu = false;
-
 	if(*inMenu)
 		return;
 
@@ -388,6 +394,7 @@ bool showConfigMenu(docgreen_status_t& status, uint8_t button)
 		{
 			case 0:
 				showTuningMenu(button);
+				inMenu = (button & BUTTON_LEFT) == 0;
 				break;
 			case 1:
 				delay(50);
@@ -418,12 +425,6 @@ void showMainMenu(docgreen_status_t& status)
 	static bool inMenu = true;
 	uint8_t button = getAndResetButtons();
 
-	if(inMenu && menu == 2)
-	{
-		inMenu = showConfigMenu(status, button);
-		return;
-	}
-
 	static const char *menus[] = {
 		"info",
 		"stats",
@@ -440,12 +441,14 @@ void showMainMenu(docgreen_status_t& status)
 		{
 			case 0:
 				showInfoScreen(status);
+				inMenu = (button & BUTTON_LEFT) == 0;
 				break;
 			case 1:
 				showStatsScreen(status);
+				inMenu = (button & BUTTON_LEFT) == 0;
 				break;
 			case 2:
-				// handeled above
+				inMenu = showConfigMenu(status, button);
 				break;
 			case 3:
 				isLocked = true;
