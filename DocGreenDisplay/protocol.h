@@ -72,7 +72,7 @@ static void setOption(uint8_t id, bool enabled)
 {
 	uint8_t data[] = {
         0x55, 0xAA, 0x04, 0x22, 0x01, id,
-        enabled ? 0x01 : 0x00,
+        enabled ? (uint8_t)0x01 : (uint8_t)0x00,
 		0x00,
         0, 0, //checksum
     };

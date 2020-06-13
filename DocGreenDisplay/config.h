@@ -17,6 +17,12 @@
 #define BRAKE_PIN A2
 #define MECHANICAL_BRAKE_PIN 4
 
+// with this defined the scooter will ask for the password after turning on.
+#define LOCK_ON_BOOT
+
+// with this defined the OLED will show a short animation on boot.
+#define SHOW_INTRO_ON_BOOT
+
 // set the max speed to this value after boot
 // a value of 20 is the factory (and legal) default
 #define DEFAULT_MAX_SPEED 20
