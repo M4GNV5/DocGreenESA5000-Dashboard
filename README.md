@@ -20,12 +20,17 @@ and contents are different.
 - [DocGreenDisplay](DocGreenDisplay/): a replacement for the stock head unit using an arduino nano and
 a 128x32 OLED display.
 
-## Dashboard Wiring
+## Dashboard PCB
 
-Bus wiring is taken from the [m365_dashboard](https://github.com/augisbud/m365_dashboard) repository.
-The rest is mostly straightforward wiring of inputs to the Arduino.
+The initial solution was a perfboard + Arduino Nano + diode & resistor solution using
+[this circuit](pictures/circuit.svg). It worked well, but was too large to fit into the dashboard place.
+Thus, after using a duct tape solution for a few months i decided to create a custom PCB with the same
+size as the orginal dashboard. The EasyEDA project can be found at:
+https://easyeda.com/M4GNV5/scooterdashboard. Below is the schematic and two unsoldered PCBs next to the
+orginal ESA5000 Dashboard PCB.
 
-![](./circuit.svg)
+![](pictures/pcb-schematic.svg)
+![](pictures/pcb-raw.jpg)
 
 ## Further Reading
 
