@@ -29,8 +29,8 @@ size as the orginal dashboard. The EasyEDA project can be found at:
 https://easyeda.com/M4GNV5/scooterdashboard. Below is the schematic and two unsoldered PCBs next to the
 orginal ESA5000 Dashboard PCB.
 
-![](pictures/pcb-schematic.svg)
-![](pictures/pcb-raw.jpg)
+![](pictures/pcb-schematic-rev1.2.svg)
+![](pictures/builtin-off.jpg)
 
 ## Further Reading
 
@@ -41,6 +41,8 @@ orginal ESA5000 Dashboard PCB.
 
 ## Pictures
 
+[![](pictures/builtin-thumb.png)](https://i.m4gnus.de/11a8b4.mp4)
+![](pictures/builtin-with-error.jpg)
 [![](pictures/tuning-thumb.png)](https://i.m4gnus.de/d8401.mp4)
 ![](pictures/sniffing.jpg)
 ![](pictures/display-prototype.jpg)
