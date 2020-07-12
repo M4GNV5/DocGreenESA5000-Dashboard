@@ -22,7 +22,12 @@ bool isLocked = false;
 #endif
 uint8_t password[] = {LOCK_PASSWORD};
 
+#ifdef ARDUINO_ARCH_ESP32
+TwoWire I2CInstance = TwoWire(0);
+Adafruit_SSD1306 display(128, 32, &I2CInstance, -1);
+#else
 Adafruit_SSD1306 display(128, 32, &Wire, -1);
+#endif
 
 //
 // utility functions
@@ -343,6 +348,23 @@ void showStatsScreen(docgreen_status_t& status)
 	display.println(status.mainboardVersion, 16);
 }
 
+void showDebugScreen(docgreen_status_t& status)
+{
+	display.setTextSize(1);
+
+	display.println("thro");
+	display.println(analogRead(THROTTLE_PIN));
+
+	display.println("brak");
+	display.println(analogRead(BRAKE_PIN));
+
+	display.println("hand");
+	display.println(digitalRead(MECHANICAL_BRAKE_PIN) == HIGH ? "H" : "L");
+
+	display.println("time");
+	display.println(millis() / 1000);
+}
+
 void showTuningMenu(uint8_t button)
 {
 	static uint32_t configuredSpeed = DEFAULT_MAX_SPEED;
@@ -472,6 +494,10 @@ void showMainMenu(docgreen_status_t& status)
 
 void initializeOledUi()
 {
+#ifdef ARDUINO_ARCH_ESP32
+	I2CInstance.begin(17, 16, 400000);
+#endif
+
     display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
 
 	display.setRotation(1);
@@ -481,6 +507,12 @@ void initializeOledUi()
 #ifdef SHOW_INTRO_ON_BOOT
 	showIntro();
 #endif
+
+	display.clearDisplay();
+	display.setCursor(0, 0);
+	display.setTextSize(1);
+	display.println("wait\nfor\ndata\n...");
+	display.display();
 }
 
 void updateOledUi(docgreen_status_t &status)
@@ -503,7 +535,7 @@ void updateOledUi(docgreen_status_t &status)
     display.clearDisplay();
 	display.setCursor(0, 0);
 
-    //if(true) showDebugMenu(status); else
+    //if(true) showDebugScreen(status); else
     if(status.errorCode != 0)
         showErrorScreen(status);
     else if(status.shuttingDown)

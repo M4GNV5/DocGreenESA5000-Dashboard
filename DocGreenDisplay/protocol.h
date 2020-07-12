@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#if defined(__AVR__)
 #ifndef ScooterSerial
 #define ScooterSerial Serial
 #endif
@@ -11,6 +12,13 @@
 #endif
 #ifndef RX_ENABLE
 #define RX_ENABLE  UCSR0B |=  _BV(RXEN0);
+#endif
+#elif defined(ARDUINO_ARCH_ESP32)
+#define ScooterSerial Serial2
+#define RX_ENABLE (0)
+#define RX_DISABLE (0)
+#else
+#error Unknown Microcontroller
 #endif
 
 typedef struct

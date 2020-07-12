@@ -12,7 +12,14 @@
 
 void setup()
 {
+#ifdef ARDUINO_ARCH_ESP32
+	ScooterSerial.begin(115200, SERIAL_8N1, 27, 26);
+
+	analogReadResolution(10);
+	analogSetAttenuation(ADC_11db);
+#else
 	ScooterSerial.begin(115200);
+#endif
 
 	pinMode(MECHANICAL_BRAKE_PIN, INPUT);
 
@@ -114,4 +121,6 @@ void loop()
 		// not only after a packet from the motor controller was received?
 		updateOledUi(status);
 	}
+
+	delay(1);
 }
