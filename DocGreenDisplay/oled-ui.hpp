@@ -5,21 +5,10 @@
 #include <Adafruit_SSD1306.h>
 #include <stdint.h>
 
+#include "state.h"
 #include "icons.h"
 
-#define BUTTON_UP     0b00000001
-#define BUTTON_RIGHT  0b00000010
-#define BUTTON_DOWN   0b00000100
-#define BUTTON_LEFT   0b00001000
-#define BUTTON_CANCEL 0b00010000
-#define BUTTON_POWER  0b00100000
 uint8_t pressedButtons = 0;
-
-#ifdef LOCK_ON_BOOT
-bool isLocked = true;
-#else
-bool isLocked = false;
-#endif
 uint8_t password[] = {LOCK_PASSWORD};
 
 #ifdef ARDUINO_ARCH_ESP32

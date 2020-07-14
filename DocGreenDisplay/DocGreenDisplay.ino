@@ -10,6 +10,15 @@
 #define BRAKE_MIN 0x2C
 #define BRAKE_MAX 0xB5
 
+#ifdef LOCK_ON_BOOT
+bool isLocked = true;
+#else
+bool isLocked = false;
+#endif
+docgreen_status_t scooterStatus = {
+	.enableStatsRequests = true,
+};
+
 void setup()
 {
 #ifdef ARDUINO_ARCH_ESP32
@@ -37,10 +46,6 @@ void setup()
 
 void loop()
 {
-	static docgreen_status_t status = {
-		.enableStatsRequests = true,
-	};
-
 	static uint32_t lastTransmit = 0;
 	uint32_t now = millis();
 	if(now - lastTransmit > TRANSMIT_INTERVAL)
@@ -77,16 +82,16 @@ void loop()
 		throttle = map(throttle, THROTTLE_READ_MIN, THROTTLE_READ_MAX, THROTTLE_MIN, THROTTLE_MAX);
 		brake = map(brake, BRAKE_READ_MIN, BRAKE_READ_MAX, BRAKE_MIN, BRAKE_MAX);
 
-		status.throttle = throttle;
-		status.brake = brake;
-		transmitInputInfo(status);
+		scooterStatus.throttle = throttle;
+		scooterStatus.brake = brake;
+		transmitInputInfo(scooterStatus);
 		lastTransmit = now;
 	}
 
-	if(ScooterSerial.available() && receivePacket(&status))
+	if(ScooterSerial.available() && receivePacket(&scooterStatus))
 	{
 		static bool hadButton = false;
-		if(status.buttonPress)
+		if(scooterStatus.buttonPress)
 		{
 			hadButton = true;
 		}
@@ -99,27 +104,27 @@ void loop()
 #ifdef REENABLE_LIGHTS_AFTER_ERROR
 		static bool hadError = false;
 		static bool lightShouldBeOn = false;
-		if(status.errorCode != 0)
+		if(scooterStatus.errorCode != 0)
 		{
 			hadError = true;
 		}
 		else if(hadError)
 		{
 			// if the lights were on before turn on the lights after an error
-			if(lightShouldBeOn && !status.lights)
+			if(lightShouldBeOn && !scooterStatus.lights)
 				setLight(true);
 
 			hadError = false;
 		}
-		else if(status.lights != lightShouldBeOn)
+		else if(scooterStatus.lights != lightShouldBeOn)
 		{
-			lightShouldBeOn = status.lights;
+			lightShouldBeOn = scooterStatus.lights;
 		}
 #endif
 
 		// TODO do this more often?
 		// not only after a packet from the motor controller was received?
-		updateOledUi(status);
+		updateOledUi(scooterStatus);
 	}
 
 	delay(1);
