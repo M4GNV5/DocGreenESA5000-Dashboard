@@ -1,0 +1,41 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1.0">
+		
+		<style>%css%/**/</style>
+	</head>
+	<body>
+		<div id="container">
+			<h1>Scooter Webinterface</h1>
+			<canvas id="speed-gauge"></canvas>
+			<canvas id="battery-gauge"></canvas>
+			<canvas id="acceleration-gauge"></canvas>
+
+			<div id="gauge-spacer"></div>
+	
+			<div id="buttons">
+				<span>
+					<button class="icon icon-beam" onclick="toggleLight()"></button><br />
+					<span id="light-status">OFF</span>
+				</span>
+				<span>
+					<button class="icon icon-eco" onclick="toggleEcoMode()"></button><br />
+					<span id="eco-status">OFF</span>
+				</span>
+				<span>
+					<button class="icon icon-lock" onclick="toggleLock()"></button><br />
+					<span id="lock-status">OFF</span>
+				</span>
+			</div>
+
+			<br /><br />
+	
+			Max Speed: <span id="max-speed">20</span><br />
+			<input type="range" min="5" max="35" value="20" id="maxSpeed"
+				onchange="configureMaxSpeed(this.value)" />
+		</div>
+
+		<script>%js%</script>
+	</body>
+</html>

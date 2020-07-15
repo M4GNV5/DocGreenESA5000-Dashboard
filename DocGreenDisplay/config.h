@@ -1,5 +1,8 @@
 #pragma once
 
+#define WIFI_AP_SSID "Scooter Dashboard"
+#define WIFI_AP_PASSWORD "FossScootersAreCool"
+
 #define LOCK_PASSWORD \
 	BUTTON_POWER, \
 	BUTTON_UP, \
