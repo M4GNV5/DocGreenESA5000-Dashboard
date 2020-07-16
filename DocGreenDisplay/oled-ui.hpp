@@ -5,11 +5,16 @@
 #include <Adafruit_SSD1306.h>
 #include <stdint.h>
 
-#include "state.h"
+#include "state.hpp"
 #include "icons.h"
 
 uint8_t pressedButtons = 0;
-uint8_t password[] = {LOCK_PASSWORD};
+
+uint32_t configuredSpeed = 20;
+
+bool isLocked = false;
+uint8_t scooterPinLength = 0;
+uint8_t scooterPin[MAX_PIN_LENGTH];
 
 #ifdef ARDUINO_ARCH_ESP32
 TwoWire I2CInstance = TwoWire(0);
@@ -217,12 +222,12 @@ void showLockMenu(docgreen_status_t& status)
 	if(buttons == 0)
 		return;
 
-	uint8_t wantedButton = password[index];
+	uint8_t wantedButton = scooterPin[index];
 	if((buttons & ~wantedButton) != 0)
 		failed = true;
 
 	index++;
-	if(index >= sizeof(password) / sizeof(uint8_t))
+	if(index >= scooterPinLength)
 	{
 		if(!failed)
 			isLocked = false;
@@ -356,8 +361,9 @@ void showDebugScreen(docgreen_status_t& status)
 
 void showTuningMenu(uint8_t button)
 {
-	static uint32_t configuredSpeed = DEFAULT_MAX_SPEED;
-	static uint32_t speed = DEFAULT_MAX_SPEED;
+	static uint32_t speed = 0;
+	if(speed == 0)
+		speed = configuredSpeed;
 
 	display.setTextSize(1);
 	display.println("max");
@@ -377,8 +383,8 @@ void showTuningMenu(uint8_t button)
 	if(button & BUTTON_UP)
 		speed--;
 
-	if(speed > 30)
-		speed = 30;
+	if(speed > 35)
+		speed = 35;
 
 	if(button & BUTTON_RIGHT)
 	{
@@ -493,9 +499,12 @@ void initializeOledUi()
 	display.setTextSize(1);
 	display.setTextColor(SSD1306_WHITE);
 
-#ifdef SHOW_INTRO_ON_BOOT
-	showIntro();
-#endif
+	if(preferences.getUChar(PREFERENCE_SHOW_INTRO, 1))
+		showIntro();
+	if(preferences.getUChar(PREFERENCE_LOCK_ON_BOOT, 0))
+		isLocked = true;
+
+	scooterPinLength = preferences.getBytes(PREFERENCE_LOCK_PIN, scooterPin, MAX_PIN_LENGTH);
 
 	display.clearDisplay();
 	display.setCursor(0, 0);

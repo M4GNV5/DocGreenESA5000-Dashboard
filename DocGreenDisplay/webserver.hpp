@@ -1,6 +1,7 @@
 #pragma once
 
 #include <WebServer.h>
+#include "state.hpp"
 #include "protocol.h"
 
 #include "webinterface/bundle.hpp"
@@ -75,7 +76,9 @@ static void handleAction()
 
 void setupWebServer()
 {
-	WiFi.softAP(WIFI_AP_SSID, WIFI_AP_PASSWORD);
+	String ssid = preferences.getString(PREFERENCE_AP_SSID, "Scooter Dashboard");
+	String pw = preferences.getString(PREFERENCE_AP_PASSWORD, "FossScootersAreCool");
+	WiFi.softAP(ssid, pw);
 
 	server.on("/", handleIndex);
 	server.on("/data", handleData);

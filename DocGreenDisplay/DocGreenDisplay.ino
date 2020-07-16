@@ -2,22 +2,17 @@
 #include <stdint.h>
 
 #include "config.h"
+#include "state.hpp"
 #include "protocol.h"
 #include "oled-ui.hpp"
 
-#define THROTTLE_MIN 0x2C
-#define THROTTLE_MAX 0xC5
-#define BRAKE_MIN 0x2C
-#define BRAKE_MAX 0xB5
+Preferences preferences;
 
-#ifdef LOCK_ON_BOOT
-bool isLocked = true;
-#else
-bool isLocked = false;
-#endif
 docgreen_status_t scooterStatus = {
 	.enableStatsRequests = true,
 };
+
+static bool reenableLightsAfterError = false;
 
 void setup()
 {
@@ -31,17 +26,22 @@ void setup()
 #endif
 
 	pinMode(MECHANICAL_BRAKE_PIN, INPUT);
-
+	preferences.begin("scooter", false);
 	initializeOledUi();
 
-#if DEFAULT_MAX_SPEED != 20
-	// send default max speed 3 times, to make sure the packet isn't lost
-	setMaxSpeed(DEFAULT_MAX_SPEED);
-	delay(50);
-	setMaxSpeed(DEFAULT_MAX_SPEED);
-	delay(50);
-	setMaxSpeed(DEFAULT_MAX_SPEED);
-#endif
+	configuredSpeed = preferences.getUChar(PREFERENCE_MAX_SPEED, 20);
+	if(configuredSpeed != 20)
+	{
+		// send default max speed 3 times, to make sure the packet isn't lost
+		setMaxSpeed(configuredSpeed);
+		delay(50);
+		setMaxSpeed(configuredSpeed);
+		delay(50);
+		setMaxSpeed(configuredSpeed);
+	}
+
+	if(preferences.getUChar(PREFERENCE_REENABLE_LIGHT, 0))
+		reenableLightsAfterError = true;
 }
 
 void loop()
@@ -101,26 +101,27 @@ void loop()
 			pressedButtons |= BUTTON_POWER;
 		}
 
-#ifdef REENABLE_LIGHTS_AFTER_ERROR
-		static bool hadError = false;
-		static bool lightShouldBeOn = false;
-		if(scooterStatus.errorCode != 0)
+		if(reenableLightsAfterError)
 		{
-			hadError = true;
-		}
-		else if(hadError)
-		{
-			// if the lights were on before turn on the lights after an error
-			if(lightShouldBeOn && !scooterStatus.lights)
-				setLight(true);
+			static bool hadError = false;
+			static bool lightShouldBeOn = false;
+			if(scooterStatus.errorCode != 0)
+			{
+				hadError = true;
+			}
+			else if(hadError)
+			{
+				// if the lights were on before turn on the lights after an error
+				if(lightShouldBeOn && !scooterStatus.lights)
+					setLight(true);
 
-			hadError = false;
+				hadError = false;
+			}
+			else if(scooterStatus.lights != lightShouldBeOn)
+			{
+				lightShouldBeOn = scooterStatus.lights;
+			}
 		}
-		else if(scooterStatus.lights != lightShouldBeOn)
-		{
-			lightShouldBeOn = scooterStatus.lights;
-		}
-#endif
 
 		// TODO do this more often?
 		// not only after a packet from the motor controller was received?
