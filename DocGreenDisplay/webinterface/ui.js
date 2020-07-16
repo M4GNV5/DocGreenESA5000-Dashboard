@@ -155,6 +155,13 @@ document.body.onload = function()
 				else
 					accelerationGauge.value = (throttle - 0x2C) / (0xC5 - 0x2C);
 
+				for(var key in data)
+				{
+					var el = document.getElementById("stat-" + key);
+					if(el)
+						el.innerText = data[key];
+				}
+
 			})
 			.catch(handleError)
 			.then(() => setTimeout(updateData, 200));
