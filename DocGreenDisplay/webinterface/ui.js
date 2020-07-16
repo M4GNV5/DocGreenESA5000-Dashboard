@@ -158,8 +158,16 @@ document.body.onload = function()
 				for(var key in data)
 				{
 					var el = document.getElementById("stat-" + key);
-					if(el)
-						el.innerText = data[key];
+					if(!el)
+						continue;
+
+					var val = data[key];
+					if(el.dataset.scale == "time")
+						val = `${val / (60 * 60) | 0}h ${(val / 60) % 60 | 0}min ${val % 60}s`;
+					else if(!isNaN(el.dataset.scale))
+						val = val * parseFloat(el.dataset.scale);
+
+					el.innerText = val;
 				}
 
 			})
