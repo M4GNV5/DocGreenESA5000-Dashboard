@@ -1,10 +1,10 @@
 #container {
 	position: absolute;
-	top: 50%;
 	left: 50%;
-	transform: translate(-50%, -50%);
+	transform: translateX(-50%);
 
-	width: 400px;
+	width: calc(100vw - 10px);
+	max-width: 400px;
 }
 
 canvas {
@@ -13,6 +13,10 @@ canvas {
 }
 #gauge-spacer {
 	margin-top: 430px;
+	margin-top: min(430px, calc(100vw + 30px));
+}
+#config-spacer {
+	margin-top: calc(100vh - 430px - 2em);
 }
 
 #buttons {
@@ -30,7 +34,7 @@ canvas {
 	display: inline-block;
 	vertical-align: top;
 }
-button {
+#buttons > span > button {
 	height: 50px;
 	width: 50px;
 	border-radius: 25px;

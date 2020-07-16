@@ -7,6 +7,7 @@
 // DocGreenDisplay.ino
 extern docgreen_status_t scooterStatus;
 extern Preferences preferences;
+extern bool reenableLightsAfterError;
 #define PREFERENCE_MAX_SPEED "max-speed"
 #define PREFERENCE_SHOW_INTRO "show-intro"
 #define PREFERENCE_REENABLE_LIGHT "reenable-light"
@@ -30,7 +31,5 @@ uint8_t getAndResetButtons();
 
 extern uint32_t configuredSpeed;
 
-#define MAX_PIN_LENGTH 16
-extern uint8_t scooterPinLength;
-extern uint8_t scooterPin[MAX_PIN_LENGTH];
+extern String scooterPin;
 extern bool isLocked;

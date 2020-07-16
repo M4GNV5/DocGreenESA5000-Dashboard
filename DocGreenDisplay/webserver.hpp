@@ -38,6 +38,23 @@ static void handleData()
 	server.send(200, "application/json", data);
 }
 
+static void handleConfig()
+{
+	String data = "{"
+		", \"" PREFERENCE_MAX_SPEED "\": " + configuredSpeed +
+		", \"" PREFERENCE_SHOW_INTRO "\": " + preferences.getUChar(PREFERENCE_SHOW_INTRO, 1) +
+		", \"" PREFERENCE_REENABLE_LIGHT "\": " + reenableLightsAfterError +
+		", \"" PREFERENCE_LOCK_ON_BOOT "\": " + preferences.getUChar(PREFERENCE_LOCK_ON_BOOT, 1) +
+		", \"" PREFERENCE_LOCK_PIN "\": \"" + scooterPin + "\"" +
+		", \"" PREFERENCE_AP_SSID "\": \"" + preferences.getString(PREFERENCE_AP_SSID, "Scooter Dashboard") + "\"" +
+		", \"" PREFERENCE_AP_PASSWORD "\": \"" + preferences.getString(PREFERENCE_AP_PASSWORD, "FossScootersAreCool") + "\"" +
+		", \"" PREFERENCE_STA_SSID "\": \"" + preferences.getString(PREFERENCE_STA_SSID) + "\"" +
+		", \"" PREFERENCE_STA_PASSWORD "\": \"" + preferences.getString(PREFERENCE_STA_PASSWORD) + "\"" +
+	"}";
+
+	server.send(200, "application/json", data);
+}
+
 static void handleAction()
 {
 	String action = server.pathArg(0);
@@ -82,6 +99,7 @@ void setupWebServer()
 
 	server.on("/", handleIndex);
 	server.on("/data", handleData);
+	server.on("/data", handleConfig);
 	server.on("/action/{}/{}", handleData);
 
 	server.begin();

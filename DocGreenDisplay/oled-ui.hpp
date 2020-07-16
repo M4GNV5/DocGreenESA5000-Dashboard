@@ -13,8 +13,7 @@ uint8_t pressedButtons = 0;
 uint32_t configuredSpeed = 20;
 
 bool isLocked = false;
-uint8_t scooterPinLength = 0;
-uint8_t scooterPin[MAX_PIN_LENGTH];
+String scooterPin;
 
 #ifdef ARDUINO_ARCH_ESP32
 TwoWire I2CInstance = TwoWire(0);
@@ -222,12 +221,12 @@ void showLockMenu(docgreen_status_t& status)
 	if(buttons == 0)
 		return;
 
-	uint8_t wantedButton = scooterPin[index];
+	uint8_t wantedButton = 1 << (scooterPin[index] - '0');
 	if((buttons & ~wantedButton) != 0)
 		failed = true;
 
 	index++;
-	if(index >= scooterPinLength)
+	if(index >= scooterPin.length())
 	{
 		if(!failed)
 			isLocked = false;
@@ -504,7 +503,7 @@ void initializeOledUi()
 	if(preferences.getUChar(PREFERENCE_LOCK_ON_BOOT, 0))
 		isLocked = true;
 
-	scooterPinLength = preferences.getBytes(PREFERENCE_LOCK_PIN, scooterPin, MAX_PIN_LENGTH);
+	scooterPin = preferences.getString(PREFERENCE_LOCK_PIN, "012345");
 
 	display.clearDisplay();
 	display.setCursor(0, 0);

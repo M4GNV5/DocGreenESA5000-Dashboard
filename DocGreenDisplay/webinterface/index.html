@@ -29,11 +29,67 @@
 				</span>
 			</div>
 
+			<div id="config-spacer"></div>
+
+			<h3>Statistics</h3>
+			<table>
+				<tbody>
+					<tr>
+						<td></td>
+					</tr>
+				</tbody>
+			</table>
+
+			<h3>Configuration</h3>
+			<table>
+				<tbody>
+					<tr>
+						<td>Max Speed</td>
+						<td><input type="number" id="config-max-speed" min="5" max="35" /></td>
+					</tr>
+					<tr>
+						<td>Show Intro on boot</td>
+						<td><input type="checkbox" id="config-show-intro" /></td>
+					</tr>
+					<tr>
+						<td>Lock after boot</td>
+						<td><input type="checkbox" id="config-lock-on-boot" /></td>
+					</tr>
+					<tr>
+						<td>Lock PIN</td>
+						<td>
+							<input type="text" id="config-lock-pin"
+								oninput="updateReadablePin()" onchange="updateReadablePin()" />
+							<br />
+							<span id="readable-pin"></span>
+						</td>
+					</tr>
+					<tr>
+						<td>Reenable light after Error</td>
+						<td><input type="checkbox" id="config-reenable-light" /></td>
+					</tr>
+					<tr>
+						<td>WiFi AP SSID</td>
+						<td><input type="text" id="config-ap-ssid" /></td>
+					</tr>
+					<tr>
+						<td>WiFi AP Password</td>
+						<td><input type="text" id="config-ap-pw" /></td>
+					</tr>
+					<tr>
+						<td>WiFi SSID</td>
+						<td><input type="text" id="config-sta-ssid" /></td>
+					</tr>
+					<tr>
+						<td>WiFi Password</td>
+						<td><input type="text" id="config-sta-pw" /></td>
+					</tr>
+				</tbody>
+			</table>
+
+			<button onclick="saveConfig()">Save</button>
+
 			<br /><br />
-	
-			Max Speed: <span id="max-speed">20</span><br />
-			<input type="range" min="5" max="35" value="20" id="maxSpeed"
-				onchange="configureMaxSpeed(this.value)" />
 		</div>
 
 		<script>%js%</script>

@@ -1,4 +1,4 @@
-import os, json
+import os, re, json
 
 with open("index.html") as fd:
     template = fd.read()
@@ -20,6 +20,8 @@ for filename in files:
 
 template = template.replace("%js%", jsCode)    
 template = template.replace("%css%", cssCode)
+
+template = re.sub("\s+", " ", template)
 
 with open("bundle.html", "w") as fd:
     fd.write(template)

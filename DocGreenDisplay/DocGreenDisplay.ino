@@ -12,7 +12,7 @@ docgreen_status_t scooterStatus = {
 	.enableStatsRequests = true,
 };
 
-static bool reenableLightsAfterError = false;
+bool reenableLightsAfterError = false;
 
 void setup()
 {

@@ -5,15 +5,19 @@ var isLockOn = false;
 function handleError(err)
 {
 	console.error(err);
-	// TODO: show to user
+	/* TODO: show to user */
 }
 
 document.body.onload = function()
 {
+	var size = window.screen.width;
+	if(size > 400)
+		size = 400;
+
 	var speedGauge = new RadialGauge({
 		renderTo: 'speed-gauge',
-		width: 400,
-		height: 400,
+		width: size,
+		height: size,
 		units: 'km/h',
 
 		title: false,
@@ -46,8 +50,8 @@ document.body.onload = function()
 
 	var batteryGauge = new RadialGauge({
 		renderTo: 'battery-gauge',
-		width: 400,
-		height: 400,
+		width: size,
+		height: size,
 
 		title: false,
 		borders: false,
@@ -77,7 +81,7 @@ document.body.onload = function()
 
 		needleType: 'line',
 		needleWidth: 2,
-		needleStart: 80,
+		needleStart: 75,
 		needleEnd: 90,
 		colorNeedle: '#f00',
 		colorNeedleEnd: '#f00',
@@ -86,8 +90,8 @@ document.body.onload = function()
 
 	var accelerationGauge = new RadialGauge({
 		renderTo: 'acceleration-gauge',
-		width: 400,
-		height: 400,
+		width: size,
+		height: size,
 
 		title: false,
 		borders: false,
@@ -114,7 +118,7 @@ document.body.onload = function()
 
 		needleType: 'line',
 		needleWidth: 2,
-		needleStart: 80,
+		needleStart: 75,
 		needleEnd: 90,
 		colorNeedle: '#00f',
 		colorNeedleEnd: '#00f',
@@ -157,7 +161,53 @@ document.body.onload = function()
 	}
 
 	updateData();
+
+	fetch('/config')
+		.then(res => res.json())
+		.then(config => {
+
+			for(var key in config)
+			{
+				var el = document.getElementById("config-" + key);
+				if(el.type === "checkbox")
+					el.checked = !!config[key];
+				else
+					el.value = config[key];
+			}
+
+			if(config.hasOwnProperty("lock-pin"))
+				updateReadablePin();
+
+		})
+		.catch(handleError);
 };
+
+function updateReadablePin()
+{
+	var readable = ["up", "right", "down", "left", "cancel", "power"];
+	var pin = document.getElementById("config-lock-pin").value;
+	var el = document.getElementById("readable-pin");
+
+	var readblePin = [];
+	for(var i = 0; i < pin.length; i++)
+	{
+		var curr = pin.charCodeAt(i) - "0".charCodeAt(0);
+		if(curr < 0 || curr > readable.length)
+		{
+			el.innerText = "invalid";
+			return;
+		}
+
+		readblePin.push(readable[curr]);
+	}
+
+	el.innerText = readblePin.join(", ");
+}
+
+function saveConfig()
+{
+	/* TODO */
+}
 
 function doAction(name, value)
 {
@@ -177,8 +227,5 @@ function toggleLock()
 {
 	doAction("setLock", !isLockOn);
 }
-function configureMaxSpeed(speed)
-{
-	doAction("setMaxSpeed", speed);
-	document.getElementById("max-speed").innerText = speed;
-}
+
+
