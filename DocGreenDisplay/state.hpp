@@ -13,8 +13,10 @@ extern bool reenableLightsAfterError;
 #define PREFERENCE_REENABLE_LIGHT "reenable-light"
 #define PREFERENCE_LOCK_ON_BOOT "lock-on-boot"
 #define PREFERENCE_LOCK_PIN "lock-pin"
+#define PREFERENCE_AP_ENABLE "ap-enable"
 #define PREFERENCE_AP_SSID "ap-ssid"
 #define PREFERENCE_AP_PASSWORD "ap-pw"
+#define PREFERENCE_STA_ENABLE "sta-enable"
 #define PREFERENCE_STA_SSID "sta-ssid"
 #define PREFERENCE_STA_PASSWORD "sta-pw"
 
@@ -33,3 +35,12 @@ extern uint32_t configuredSpeed;
 
 extern String scooterPin;
 extern bool isLocked;
+
+
+// wifi.hpp
+extern bool wifiApEnabled;
+extern bool wifiStaEnabled;
+extern String wifiApSsid;
+extern String wifiApPassword;
+extern String wifiStaSsid;
+extern String wifiStaPassword;

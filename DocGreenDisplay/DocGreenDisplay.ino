@@ -4,6 +4,8 @@
 #include "config.h"
 #include "state.hpp"
 #include "protocol.h"
+
+#include "wifi.hpp"
 #include "oled-ui.hpp"
 #include "webserver.hpp"
 
@@ -28,8 +30,10 @@ void setup()
 
 	pinMode(MECHANICAL_BRAKE_PIN, INPUT);
 	preferences.begin("scooter", false);
+
+	wifiSetup();
 	initializeOledUi();
-	setupWebServer();
+	webServerSetup();
 
 	configuredSpeed = preferences.getUChar(PREFERENCE_MAX_SPEED, 20);
 	if(configuredSpeed != 20)
@@ -130,6 +134,6 @@ void loop()
 		updateOledUi(scooterStatus);
 	}
 
-	handleWebserver();
+	webServerLoop();
 	delay(1);
 }

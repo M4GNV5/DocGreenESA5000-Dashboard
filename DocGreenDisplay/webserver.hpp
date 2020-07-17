@@ -6,11 +6,6 @@
 
 #include "webinterface/bundle.hpp"
 
-String wifiApSsid;
-String wifiApPassword;
-String wifiStaSsid;
-String wifiStaPassword;
-
 static WebServer server;
 
 static void handleIndex()
@@ -52,8 +47,10 @@ static void handleConfig()
 		", \"" PREFERENCE_REENABLE_LIGHT "\": " + reenableLightsAfterError +
 		", \"" PREFERENCE_LOCK_ON_BOOT "\": " + preferences.getUChar(PREFERENCE_LOCK_ON_BOOT, 1) +
 		", \"" PREFERENCE_LOCK_PIN "\": \"" + scooterPin + "\"" +
+		", \"" PREFERENCE_AP_ENABLE "\": " + preferences.getUChar(PREFERENCE_AP_ENABLE, 1) +
 		", \"" PREFERENCE_AP_SSID "\": \"" + wifiApSsid + "\"" +
 		", \"" PREFERENCE_AP_PASSWORD "\": \"" + wifiApPassword + "\"" +
+		", \"" PREFERENCE_STA_ENABLE "\": " + preferences.getUChar(PREFERENCE_STA_ENABLE, 0) +
 		", \"" PREFERENCE_STA_SSID "\": \"" + wifiStaSsid + "\"" +
 		", \"" PREFERENCE_STA_PASSWORD "\": \"" + wifiStaPassword + "\"" +
 	"}";
@@ -103,6 +100,8 @@ static void handleUpdateConfig()
 
 	updateBoolPreference(PREFERENCE_SHOW_INTRO, preferences.getUChar(PREFERENCE_SHOW_INTRO, 1));
 	updateBoolPreference(PREFERENCE_LOCK_ON_BOOT, preferences.getUChar(PREFERENCE_LOCK_ON_BOOT, 1));
+	updateBoolPreference(PREFERENCE_AP_ENABLE, preferences.getUChar(PREFERENCE_AP_ENABLE, 1));
+	updateBoolPreference(PREFERENCE_STA_ENABLE, preferences.getUChar(PREFERENCE_STA_ENABLE, 0));
 	reenableLightsAfterError = updateBoolPreference(PREFERENCE_REENABLE_LIGHT, reenableLightsAfterError);
 
 	updateStringPreference(PREFERENCE_LOCK_PIN, &scooterPin);
@@ -136,25 +135,20 @@ static void handleAction()
 	server.send(200, "text/plain", "ok");
 }
 
-void setupWebServer()
+void webServerSetup()
 {
-	// TODO put this in a seperate module, base the SSID on the MAC and use a random password.
-	wifiApSsid = preferences.getString(PREFERENCE_AP_SSID, "Scooter Dashboard");
-	wifiApPassword = preferences.getString(PREFERENCE_AP_PASSWORD, "FossScootersAreCool");
-	wifiStaSsid = "";
-	wifiStaPassword = "";
-	WiFi.softAP(wifiApSsid.c_str(), wifiApPassword.c_str());
-
 	server.on("/", handleIndex);
 	server.on("/data", handleData);
 	server.on("/config", handleConfig);
 	server.on("/updateConfig", handleUpdateConfig);
 	server.on("/action/{}/{}", handleAction);
 
-	server.begin();
+	if(wifiApEnabled || wifiStaEnabled)
+		server.begin();
 }
 
-void handleWebserver()
+void webServerLoop()
 {
-	server.handleClient();
+	if(wifiApEnabled || wifiStaEnabled)
+		server.handleClient();
 }

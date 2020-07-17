@@ -231,7 +231,7 @@ function saveConfig()
 	{
 		var name = field.id.substr("config-".length);
 		var value;
-		if(fields.type == "checkbox")
+		if(field.type == "checkbox")
 			value = field.checked.toString();
 		else
 			value = field.value;
