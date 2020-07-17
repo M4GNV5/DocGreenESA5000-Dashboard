@@ -32,7 +32,7 @@ with open("bundle.hpp", "w") as fd:
     fd.write("//{} bytes of gzipped html (uncompressed: {} bytes)\n".format(len(compressed), len(template)))
     fd.write("const uint8_t webpageData[] PROGMEM = {\n")
     for i, val in enumerate(compressed):
-        fd.write(hex(val) + ", ")
+        fd.write("{0:#04x}, ".format(val))
         if i % 16 == 15:
             fd.write("\n")
     fd.write("\n};\n//end")

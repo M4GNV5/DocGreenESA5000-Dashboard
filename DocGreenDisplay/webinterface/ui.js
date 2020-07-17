@@ -224,7 +224,26 @@ function updateReadablePin()
 
 function saveConfig()
 {
-	/* TODO */
+	var fields = document.querySelectorAll('*[id^="config-"]');
+	var params = new URLSearchParams();
+
+	for(var field of fields)
+	{
+		var name = field.id.substr("config-".length);
+		var value;
+		if(fields.type == "checkbox")
+			value = field.checked.toString();
+		else
+			value = field.value;
+
+		params.append(name, value);
+	}
+
+	fetch("/updateConfig", {
+		method: 'POST',
+		body: params,
+	})
+		.catch(handleError);
 }
 
 function doAction(name, value)

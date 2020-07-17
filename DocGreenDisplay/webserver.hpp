@@ -6,6 +6,11 @@
 
 #include "webinterface/bundle.hpp"
 
+String wifiApSsid;
+String wifiApPassword;
+String wifiStaSsid;
+String wifiStaPassword;
+
 static WebServer server;
 
 static void handleIndex()
@@ -47,13 +52,66 @@ static void handleConfig()
 		", \"" PREFERENCE_REENABLE_LIGHT "\": " + reenableLightsAfterError +
 		", \"" PREFERENCE_LOCK_ON_BOOT "\": " + preferences.getUChar(PREFERENCE_LOCK_ON_BOOT, 1) +
 		", \"" PREFERENCE_LOCK_PIN "\": \"" + scooterPin + "\"" +
-		", \"" PREFERENCE_AP_SSID "\": \"" + preferences.getString(PREFERENCE_AP_SSID, "Scooter Dashboard") + "\"" +
-		", \"" PREFERENCE_AP_PASSWORD "\": \"" + preferences.getString(PREFERENCE_AP_PASSWORD, "FossScootersAreCool") + "\"" +
-		", \"" PREFERENCE_STA_SSID "\": \"" + preferences.getString(PREFERENCE_STA_SSID) + "\"" +
-		", \"" PREFERENCE_STA_PASSWORD "\": \"" + preferences.getString(PREFERENCE_STA_PASSWORD) + "\"" +
+		", \"" PREFERENCE_AP_SSID "\": \"" + wifiApSsid + "\"" +
+		", \"" PREFERENCE_AP_PASSWORD "\": \"" + wifiApPassword + "\"" +
+		", \"" PREFERENCE_STA_SSID "\": \"" + wifiStaSsid + "\"" +
+		", \"" PREFERENCE_STA_PASSWORD "\": \"" + wifiStaPassword + "\"" +
 	"}";
 
 	server.send(200, "application/json", data);
+}
+
+static bool updateBoolPreference(const char *name, bool oldVal)
+{
+	if(!server.hasArg(name))
+		return oldVal;
+
+	bool val = server.arg(name) == "true";
+	if(val != oldVal)
+		preferences.putUChar(name, val);
+
+	return val;
+}
+static void updateStringPreference(const char *name, String *valPtr)
+{
+	if(!server.hasArg(name))
+		return;
+
+	String val = server.arg(name);
+	if(val != *valPtr)
+	{
+		preferences.putString(name, val);
+		*valPtr = val;
+	}
+}
+static void handleUpdateConfig()
+{
+	String maxSpeedStr = server.arg(PREFERENCE_MAX_SPEED);
+	uint32_t maxSpeed = atoi(maxSpeedStr.c_str());
+	if(maxSpeed >= 5 && maxSpeed <= 35 && maxSpeed != configuredSpeed)
+	{
+		setMaxSpeed(maxSpeed);
+
+		configuredSpeed = maxSpeed;
+		preferences.putUChar(PREFERENCE_MAX_SPEED, maxSpeed);
+	}
+	else if(maxSpeed != configuredSpeed)
+	{
+		server.send(400, "text/plain", "invalid speed");
+		return;
+	}
+
+	updateBoolPreference(PREFERENCE_SHOW_INTRO, preferences.getUChar(PREFERENCE_SHOW_INTRO, 1));
+	updateBoolPreference(PREFERENCE_LOCK_ON_BOOT, preferences.getUChar(PREFERENCE_LOCK_ON_BOOT, 1));
+	reenableLightsAfterError = updateBoolPreference(PREFERENCE_REENABLE_LIGHT, reenableLightsAfterError);
+
+	updateStringPreference(PREFERENCE_LOCK_PIN, &scooterPin);
+	updateStringPreference(PREFERENCE_AP_SSID, &wifiApSsid);
+	updateStringPreference(PREFERENCE_AP_PASSWORD, &wifiApPassword);
+	updateStringPreference(PREFERENCE_STA_SSID, &wifiStaSsid);
+	updateStringPreference(PREFERENCE_STA_PASSWORD, &wifiStaPassword);
+
+	server.send(200, "text/plain", "ok");
 }
 
 static void handleAction()
@@ -80,13 +138,17 @@ static void handleAction()
 
 void setupWebServer()
 {
-	String ssid = preferences.getString(PREFERENCE_AP_SSID, "Scooter Dashboard");
-	String pw = preferences.getString(PREFERENCE_AP_PASSWORD, "FossScootersAreCool");
-	WiFi.softAP(ssid.c_str(), pw.c_str());
+	// TODO put this in a seperate module, base the SSID on the MAC and use a random password.
+	wifiApSsid = preferences.getString(PREFERENCE_AP_SSID, "Scooter Dashboard");
+	wifiApPassword = preferences.getString(PREFERENCE_AP_PASSWORD, "FossScootersAreCool");
+	wifiStaSsid = "";
+	wifiStaPassword = "";
+	WiFi.softAP(wifiApSsid.c_str(), wifiApPassword.c_str());
 
 	server.on("/", handleIndex);
 	server.on("/data", handleData);
 	server.on("/config", handleConfig);
+	server.on("/updateConfig", handleUpdateConfig);
 	server.on("/action/{}/{}", handleAction);
 
 	server.begin();
