@@ -10,7 +10,8 @@ static WebServer server;
 
 static void handleIndex()
 {
-	server.send(200, "text/html", webpageData);
+	server.sendHeader("Content-Encoding", "gzip");
+	server.send_P(200, PSTR("text/html"), (PGM_P)webpageData, sizeof(webpageData) / sizeof(*webpageData));
 }
 
 static void handleData()
