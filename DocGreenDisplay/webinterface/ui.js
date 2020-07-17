@@ -175,6 +175,9 @@ document.body.onload = function()
 			.then(() => setTimeout(updateData, 200));
 	}
 
+	speedGauge.draw();
+	batteryGauge.draw();
+	accelerationGauge.draw();
 	updateData();
 
 	fetch('/config')

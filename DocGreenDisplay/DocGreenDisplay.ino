@@ -5,6 +5,7 @@
 #include "state.hpp"
 #include "protocol.h"
 #include "oled-ui.hpp"
+#include "webserver.hpp"
 
 Preferences preferences;
 
@@ -28,6 +29,7 @@ void setup()
 	pinMode(MECHANICAL_BRAKE_PIN, INPUT);
 	preferences.begin("scooter", false);
 	initializeOledUi();
+	setupWebServer();
 
 	configuredSpeed = preferences.getUChar(PREFERENCE_MAX_SPEED, 20);
 	if(configuredSpeed != 20)
@@ -128,5 +130,6 @@ void loop()
 		updateOledUi(scooterStatus);
 	}
 
+	handleWebserver();
 	delay(1);
 }

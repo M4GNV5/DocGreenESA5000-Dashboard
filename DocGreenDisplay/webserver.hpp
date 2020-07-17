@@ -15,7 +15,7 @@ static void handleIndex()
 
 static void handleData()
 {
-	String data = "{"
+	String data = String("{") +
 		"\"throttle\": " + scooterStatus.throttle +
 		", \"brake\": " + scooterStatus.brake +
 		", \"ecoMode\": " + scooterStatus.ecoMode +
@@ -40,8 +40,8 @@ static void handleData()
 
 static void handleConfig()
 {
-	String data = "{"
-		", \"" PREFERENCE_MAX_SPEED "\": " + configuredSpeed +
+	String data = String("{") +
+		"\"" PREFERENCE_MAX_SPEED "\": " + configuredSpeed +
 		", \"" PREFERENCE_SHOW_INTRO "\": " + preferences.getUChar(PREFERENCE_SHOW_INTRO, 1) +
 		", \"" PREFERENCE_REENABLE_LIGHT "\": " + reenableLightsAfterError +
 		", \"" PREFERENCE_LOCK_ON_BOOT "\": " + preferences.getUChar(PREFERENCE_LOCK_ON_BOOT, 1) +
@@ -58,33 +58,19 @@ static void handleConfig()
 static void handleAction()
 {
 	String action = server.pathArg(0);
-	String arg = server.pathArg(1);
+	bool enabled = server.pathArg(1) == "true";
 
-	if(action == "setMaxSpeed")
+	if(action == "setEcoMode")
 	{
-		int speed = atoi(arg);
-		if(speed < 5 || speed > 35)
-		{
-			server.send(400, "text/plain", "invalid speed");
-			return;
-		}
-
-		setMaxSpeed(speed);
-	}
-	else if(action == "setEcoMode")
-	{
-		bool enabled = arg == "true";
 		setEcoMode(enabled);
 	}
 	else if(action == "setLock")
 	{
-		bool enabled = arg == "true";
 		isLocked = enabled;
 		setLock(enabled);
 	}
 	else if(action == "setLight")
 	{
-		bool enabled = arg == "true";
 		setLight(enabled);
 	}
 
@@ -95,12 +81,12 @@ void setupWebServer()
 {
 	String ssid = preferences.getString(PREFERENCE_AP_SSID, "Scooter Dashboard");
 	String pw = preferences.getString(PREFERENCE_AP_PASSWORD, "FossScootersAreCool");
-	WiFi.softAP(ssid, pw);
+	WiFi.softAP(ssid.c_str(), pw.c_str());
 
 	server.on("/", handleIndex);
 	server.on("/data", handleData);
-	server.on("/data", handleConfig);
-	server.on("/action/{}/{}", handleData);
+	server.on("/config", handleConfig);
+	server.on("/action/{}/{}", handleAction);
 
 	server.begin();
 }
