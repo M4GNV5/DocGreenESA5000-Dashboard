@@ -392,15 +392,50 @@ void showTuningMenu(uint8_t button)
 	}
 }
 
+void showWifiMenu(uint8_t button)
+{
+	display.setTextSize(1);
+	display.println("WiFi");
+
+	display.setCursor(0, display.getCursorY() + 5);
+
+	display.println("AP:");
+	display.println(wifiApEnabled ? "ON" : " OFF");
+
+	display.setCursor(0, display.getCursorY() + 5);
+
+	static bool onAfterReboot = false;
+	if(wifiApEnabled)
+	{
+		display.println("pass:");
+		display.println(wifiApPassword);
+	}
+	else if(onAfterReboot)
+	{
+		display.println("on");
+		display.println("after");
+		display.println("boot");
+	}
+	else
+	{
+
+		display.println("turn");
+		display.println("on?");
+		if(!onAfterReboot && button & BUTTON_RIGHT)
+			preferences.putUChar(PREFERENCE_AP_ENABLE, 1);
+	}
+}
+
 bool showConfigMenu(docgreen_status_t& status, uint8_t button)
 {
 	static int menu = 0;
 	static bool inMenu = false;
 	static const char *menus[] = {
 		"tune",
+		"wifi",
 		"light",
 		"eco",
-		"lock",
+		"debug",
 	};
 
 	bool exitConfigMenu = !inMenu && button & BUTTON_LEFT;
@@ -417,21 +452,22 @@ bool showConfigMenu(docgreen_status_t& status, uint8_t button)
 				inMenu = (button & BUTTON_LEFT) == 0;
 				break;
 			case 1:
+				showWifiMenu(button);
+				inMenu = (button & BUTTON_LEFT) == 0;
+				break;
+			case 2:
 				delay(50);
 				setLight(!status.lights);
 				inMenu = false;
 				break;
-			case 2:
+			case 3:
 				delay(50);
 				setEcoMode(!status.ecoMode);
 				inMenu = false;
 				break;
-			case 3:
-				delay(50);
-				static bool isEcuLocked = false;
-				isEcuLocked = !isEcuLocked;
-				setLock(isEcuLocked);
-				inMenu = false;
+			case 4:
+				showDebugScreen(status);
+				inMenu = (button & BUTTON_LEFT) == 0;
 				break;
 		}
 	}

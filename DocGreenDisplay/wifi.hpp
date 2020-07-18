@@ -56,15 +56,6 @@ void wifiSetup()
 	if(wifiStaSsid == "")
 		wifiStaEnabled = false;
 
-	// XXX: remove and display in OLED instead
-	Serial.begin(115200);
-	Serial.print("wifi credentials: ");
-	Serial.print(wifiApSsid);
-	Serial.print(" : ");
-	Serial.println(wifiApPassword);
-	Serial.println(wifiStaEnabled ? "STA on" : "STA off");
-	Serial.println(wifiApEnabled ? "AP on" : "AP off");
-
 	if(wifiApEnabled && wifiStaEnabled)
 		WiFi.mode(WIFI_AP_STA);
 	else if(wifiStaEnabled)
