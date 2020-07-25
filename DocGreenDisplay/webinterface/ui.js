@@ -145,7 +145,7 @@ document.body.onload = function()
 				updateStatusSpan("eco-status", isEcoModeOn);
 				updateStatusSpan("lock-status", isLockOn);
 
-				speedGauge.value = data.speed;
+				speedGauge.value = data.speed / 1000;
 				batteryGauge.value = data.soc;
 
 				var throttle = data.throttle;
