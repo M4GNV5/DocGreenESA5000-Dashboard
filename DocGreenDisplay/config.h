@@ -18,3 +18,6 @@
 #define THROTTLE_MAX 0xC5
 #define BRAKE_MIN 0x2C
 #define BRAKE_MAX 0xB5
+
+// mDNS name, the webinterface will be available at http://<name>.local
+#define MDNS_DOMAIN_NAME "scooter"

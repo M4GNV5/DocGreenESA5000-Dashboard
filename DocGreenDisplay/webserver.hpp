@@ -1,6 +1,8 @@
 #pragma once
 
 #include <WebServer.h>
+#include <ESPmDNS.h>
+
 #include "state.hpp"
 #include "protocol.h"
 
@@ -125,6 +127,10 @@ static void handleAction()
 	else if(action == "setLock")
 	{
 		isLocked = enabled;
+		setLock(enabled);
+		delay(50);
+		setLock(enabled);
+		delay(50);
 		setLock(enabled);
 	}
 	else if(action == "setLight")

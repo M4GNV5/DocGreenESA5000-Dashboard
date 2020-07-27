@@ -35,6 +35,12 @@ void setup()
 	initializeOledUi();
 	webServerSetup();
 
+	if(wifiApEnabled || wifiStaEnabled)
+	{
+		MDNS.begin(MDNS_DOMAIN_NAME); // TODO allow the user to configure this?
+		MDNS.addService("http", "tcp", 80);
+	}
+
 	configuredSpeed = preferences.getUChar(PREFERENCE_MAX_SPEED, 20);
 	if(configuredSpeed != 20)
 	{
