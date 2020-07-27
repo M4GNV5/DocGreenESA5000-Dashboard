@@ -8,6 +8,7 @@
 #include "wifi.hpp"
 #include "oled-ui.hpp"
 #include "webserver.hpp"
+#include "update.hpp"
 
 Preferences preferences;
 
@@ -41,6 +42,9 @@ void setup()
 		MDNS.addService("http", "tcp", 80);
 	}
 
+	if(wifiStaEnabled)
+		configTime(0, 0, NTP_SERVER_1, NTP_SERVER_2, NTP_SERVER_3);
+
 	configuredSpeed = preferences.getUChar(PREFERENCE_MAX_SPEED, 20);
 	if(configuredSpeed != 20)
 	{
@@ -54,6 +58,8 @@ void setup()
 
 	if(preferences.getUChar(PREFERENCE_REENABLE_LIGHT, 0))
 		reenableLightsAfterError = true;
+
+	setupFirmwareUpdate();
 }
 
 void loop()

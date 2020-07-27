@@ -55,6 +55,8 @@ static void handleConfig()
 		", \"" PREFERENCE_STA_ENABLE "\": " + preferences.getUChar(PREFERENCE_STA_ENABLE, 0) +
 		", \"" PREFERENCE_STA_SSID "\": \"" + wifiStaSsid + "\"" +
 		", \"" PREFERENCE_STA_PASSWORD "\": \"" + wifiStaPassword + "\"" +
+		", \"" PREFERENCE_UPDATE_AUTO "\": \"" + preferences.getUChar(PREFERENCE_UPDATE_AUTO, 1) + "\"" +
+		", \"" PREFERENCE_UPDATE_URL "\": \"" + firmwareUpdateUrl + "\"" +
 	"}";
 
 	server.send(200, "application/json", data);
@@ -104,6 +106,7 @@ static void handleUpdateConfig()
 	updateBoolPreference(PREFERENCE_LOCK_ON_BOOT, preferences.getUChar(PREFERENCE_LOCK_ON_BOOT, 1));
 	updateBoolPreference(PREFERENCE_AP_ENABLE, preferences.getUChar(PREFERENCE_AP_ENABLE, 1));
 	updateBoolPreference(PREFERENCE_STA_ENABLE, preferences.getUChar(PREFERENCE_STA_ENABLE, 0));
+	updateBoolPreference(PREFERENCE_UPDATE_AUTO, preferences.getUChar(PREFERENCE_UPDATE_AUTO, 1));
 	reenableLightsAfterError = updateBoolPreference(PREFERENCE_REENABLE_LIGHT, reenableLightsAfterError);
 
 	updateStringPreference(PREFERENCE_LOCK_PIN, &scooterPin);
@@ -111,6 +114,7 @@ static void handleUpdateConfig()
 	updateStringPreference(PREFERENCE_AP_PASSWORD, &wifiApPassword);
 	updateStringPreference(PREFERENCE_STA_SSID, &wifiStaSsid);
 	updateStringPreference(PREFERENCE_STA_PASSWORD, &wifiStaPassword);
+	updateStringPreference(PREFERENCE_UPDATE_URL, &firmwareUpdateUrl);
 
 	server.send(200, "text/plain", "ok");
 }

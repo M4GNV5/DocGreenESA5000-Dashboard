@@ -21,3 +21,9 @@
 
 // mDNS name, the webinterface will be available at http://<name>.local
 #define MDNS_DOMAIN_NAME "scooter"
+
+#define NTP_SERVER_1 "de.pool.ntp.org"
+#define NTP_SERVER_2 "ptbtime2.ptb.de"
+#define NTP_SERVER_3 "ntp.uni-regensburg.de"
+
+#define DEFAULT_UPDATE_URL "https://jakobloew.me/scooter/dashboard.bin"
