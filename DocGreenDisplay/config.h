@@ -9,9 +9,9 @@
 
 // the hall sensors have values between 0.8V and 5V resulting in 179-1024 for a 10bit 5V ADC
 #define THROTTLE_READ_MIN 225
-#define THROTTLE_READ_MAX 1024
+#define THROTTLE_READ_MAX 800
 #define BRAKE_READ_MIN 225
-#define BRAKE_READ_MAX 1024
+#define BRAKE_READ_MAX 800
 
 // min/max values on the bus
 #define THROTTLE_MIN 0x2C

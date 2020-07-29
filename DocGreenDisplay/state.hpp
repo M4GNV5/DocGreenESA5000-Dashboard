@@ -50,4 +50,4 @@ extern String wifiStaPassword;
 
 // update.hpp
 extern String firmwareUpdateUrl;
-extern const char *firmwareUpdateStatus;
+extern String firmwareUpdateStatus;

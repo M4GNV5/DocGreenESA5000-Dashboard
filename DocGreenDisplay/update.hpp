@@ -37,9 +37,8 @@ const char *letsEncryptX3RootCa = \
 "KOqkqm57TH2H3eDJAkSnh6/DNFu0Qg==\n" \
 "-----END CERTIFICATE-----\n";
 
-String updateUrl;
-const char *firmwareUpdateStatus = "pending";
-std::thread *firmwareUpdateThread;
+String firmwareUpdateUrl;
+String firmwareUpdateStatus = "pending";
 
 void checkForFirmwareUpdates()
 {
@@ -55,6 +54,7 @@ void checkForFirmwareUpdates()
 	client.setCACert(letsEncryptX3RootCa);
 	client.setTimeout(10);
 
+	httpUpdate.rebootOnUpdate(false);
 	t_httpUpdate_return ret = httpUpdate.update(client, firmwareUpdateUrl);
 
 	if(ret == HTTP_UPDATE_OK)
@@ -62,7 +62,7 @@ void checkForFirmwareUpdates()
 	else if(ret == HTTP_UPDATE_NO_UPDATES)
 		firmwareUpdateStatus = "no updates";
 	else
-		firmwareUpdateStatus = "failed";
+		firmwareUpdateStatus = "Error: " + httpUpdate.getLastErrorString();
 }
 
 void setupFirmwareUpdate()
@@ -77,9 +77,10 @@ void setupFirmwareUpdate()
 
 	if(!wifiStaEnabled)
 	{
-		firmwareUpdateStatus = "failed";
+		firmwareUpdateStatus = "no internet";
 		return;
 	}
 
-	firmwareUpdateThread = new std::thread(checkForFirmwareUpdates);
+	// TODO launch this in a thread?
+	checkForFirmwareUpdates();
 }

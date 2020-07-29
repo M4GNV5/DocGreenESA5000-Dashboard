@@ -36,6 +36,7 @@ static void handleData()
 		", \"odometer\": " + scooterStatus.odometer +
 		", \"temperature\": " + scooterStatus.temperature +
 		", \"isLocked\": " + isLocked +
+		", \"updateStatus\": \"" + firmwareUpdateStatus + "\"" +
 	"}";
 
 	server.send(200, "application/json", data);
