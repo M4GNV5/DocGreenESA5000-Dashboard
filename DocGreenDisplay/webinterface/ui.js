@@ -65,15 +65,15 @@ document.body.onload = function()
 		ticksAngle: 70,
 
 		majorTicks: [
-			'0','20','40','60','80','100',
+			'100','80','60','40','20','0',
 		],
 		minTicks: 1,
 		highlights: [
-			{ from: 80, to: 100, color: 'rgba(0,255,0,.5)' },
-			{ from: 60, to: 80, color: 'rgba(0,255,0,.4)' },
+			{ from: 00, to: 20, color: 'rgba(0,255,0,.5)' },
+			{ from: 20, to: 40, color: 'rgba(0,255,0,.4)' },
 			{ from: 40, to: 60, color: 'rgba(0,255,0,.3)' },
-			{ from: 20, to: 40, color: 'rgba(0,255,0,.2)' },
-			{ from: 0, to: 20, color: 'rgba(0,255,0,.1)' },
+			{ from: 60, to: 80, color: 'rgba(0,255,0,.2)' },
+			{ from: 80, to: 100, color: 'rgba(0,255,0,.1)' },
 		],
 		colorPlate: 'rgba(255, 255, 255, 0)',
 		animationRule: 'linear',
@@ -83,9 +83,11 @@ document.body.onload = function()
 		needleWidth: 2,
 		needleStart: 75,
 		needleEnd: 90,
-		colorNeedle: '#f00',
-		colorNeedleEnd: '#f00',
+		colorNeedle: '#00f',
+		colorNeedleEnd: '#00f',
 		needleShadow: false,
+
+		barStartPosition: 'right',
 	});
 
 	var accelerationGauge = new RadialGauge({
@@ -105,12 +107,12 @@ document.body.onload = function()
 		ticksAngle: 80,
 
 		majorTicks: [
-			'-1','-0.5','0','0.5','1',
+			'1','0.5','0','-0.5','-1',
 		],
 		minTicks: 3,
 		highlights: [
-			{ from: -1, to: 0, color: 'rgba(0,255,0,.5)' },
-			{ from: 0, to: 1, color: 'rgba(255,0,0,.5)' },
+			{ from: 0, to: 1, color: 'rgba(0,255,0,.5)' },
+			{ from: -1, to: 0, color: 'rgba(255,0,0,.5)' },
 		],
 		colorPlate: 'rgba(255, 255, 255, 0)',
 		animationRule: 'linear',
@@ -123,6 +125,8 @@ document.body.onload = function()
 		colorNeedle: '#00f',
 		colorNeedleEnd: '#00f',
 		needleShadow: false,
+
+		barStartPosition: 'right',
 	});
 
 	function updateStatusSpan(id, status)

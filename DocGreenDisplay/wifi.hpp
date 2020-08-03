@@ -21,6 +21,8 @@ void wifiSetup()
 	wifiStaSsid = preferences.getString(PREFERENCE_STA_SSID, "");
 	wifiStaPassword = preferences.getString(PREFERENCE_STA_PASSWORD, "");
 
+	WiFi.persistent(false);
+
 	char buff[32];
 	if(wifiApSsid == "")
 	{
