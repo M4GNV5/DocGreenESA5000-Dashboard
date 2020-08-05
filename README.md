@@ -17,7 +17,7 @@ and contents are different.
 - [docgreen-protocol](docgreen-protocol.md): a list of bus messages and the meaning of some of the bytes
 - [MegaSniffer](MegaSniffer/): a small arduino program to sniff the internal bus using an Arduino Mega
 - [sniffs](sniffs/): a set of labeled sniffs
-- [DocGreenDisplay](DocGreenDisplay/): a replacement for the stock head unit using an arduino nano and
+- [DocGreenDisplay](DocGreenDisplay/): a replacement for the stock head unit using an Arduino Nano or ESP32 and
 a 128x32 OLED display.
 
 ## Dashboard PCB
@@ -32,6 +32,13 @@ to a USB programmer.
 
 ## Further Reading
 
+### Other ESA 5000/1919 Projects
+- https://github.com/Bert-Tec/xbot_display
+- https://github.com/ands/EsaBusModule
+- https://github.com/mxbode/ESA5000SetSpeedButton
+- https://github.com/crexodon/ESA5000_Dashboard
+
+### Related Projects for other Scooters
 - https://github.com/augisbud/m365_dashboard
 - https://github.com/etransport/ninebot-docs/wiki/protocol M365 protocol documentation.
 - https://github.com/camcamfresh/Xiaomi-M365-BLE-Controller-Replacement
