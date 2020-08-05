@@ -25,11 +25,9 @@ a 128x32 OLED display.
 The initial solution was a perfboard + Arduino Nano + diode & resistor solution using
 [this circuit](pictures/circuit.svg). It worked well, but was too large to fit into the dashboard place.
 Thus, after using a duct tape solution for a few months i decided to create a custom PCB with the same
-size as the orginal dashboard. The EasyEDA project can be found at:
-https://easyeda.com/M4GNV5/scooterdashboard. Below is the schematic and two unsoldered PCBs next to the
-orginal ESA5000 Dashboard PCB.
+size as the original dashboard. Below shows an old version of the PCB in the scooter housing connected
+to a USB programmer.
 
-![](pictures/pcb-schematic-rev1.2.svg)
 ![](pictures/builtin-off.jpg)
 
 ## Further Reading
