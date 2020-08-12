@@ -47,7 +47,7 @@ static void handleConfig()
 		"\"" PREFERENCE_MAX_SPEED "\": " + configuredSpeed +
 		", \"" PREFERENCE_SHOW_INTRO "\": " + preferences.getUChar(PREFERENCE_SHOW_INTRO, 1) +
 		", \"" PREFERENCE_REENABLE_LIGHT "\": " + reenableLightsAfterError +
-		", \"" PREFERENCE_LOCK_ON_BOOT "\": " + preferences.getUChar(PREFERENCE_LOCK_ON_BOOT, 1) +
+		", \"" PREFERENCE_LOCK_ON_BOOT "\": " + preferences.getUChar(PREFERENCE_LOCK_ON_BOOT, 0) +
 		", \"" PREFERENCE_LOCK_PIN "\": \"" + scooterPin + "\"" +
 		", \"" PREFERENCE_AP_ENABLE "\": " + preferences.getUChar(PREFERENCE_AP_ENABLE, 1) +
 		", \"" PREFERENCE_AP_SSID "\": \"" + wifiApSsid + "\"" +
@@ -103,7 +103,7 @@ static void handleUpdateConfig()
 	}
 
 	updateBoolPreference(PREFERENCE_SHOW_INTRO, preferences.getUChar(PREFERENCE_SHOW_INTRO, 1));
-	updateBoolPreference(PREFERENCE_LOCK_ON_BOOT, preferences.getUChar(PREFERENCE_LOCK_ON_BOOT, 1));
+	updateBoolPreference(PREFERENCE_LOCK_ON_BOOT, preferences.getUChar(PREFERENCE_LOCK_ON_BOOT, 0));
 	updateBoolPreference(PREFERENCE_AP_ENABLE, preferences.getUChar(PREFERENCE_AP_ENABLE, 1));
 	updateBoolPreference(PREFERENCE_STA_ENABLE, preferences.getUChar(PREFERENCE_STA_ENABLE, 0));
 	updateBoolPreference(PREFERENCE_UPDATE_AUTO, preferences.getUChar(PREFERENCE_UPDATE_AUTO, 1));
