@@ -78,8 +78,8 @@ packets exluding the `55 AA` header and the checksum.
 - command `07`
     - `00 01 02 03 04 05 06 07 08 09` (index in decimal)
     - `08 25 07 BD 31 00 00 00 00 00`
-    - byte 4: ?
-    - TODO: is this sent by the motor controller? or the dashboard?
+    - byte 4: ? seems to count down and then wrap around
+    - this packet is sent by the motor controller, not the dashboard
 
 ## Address `27` input information 2
 - `00 01 02 03 04 05 06 07 08 09 10` (index in decimal)

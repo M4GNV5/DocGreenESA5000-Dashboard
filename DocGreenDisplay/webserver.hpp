@@ -34,7 +34,6 @@ static void handleData()
 		", \"current\": " + scooterStatus.current +
 		", \"mainboardVersion\": " + scooterStatus.mainboardVersion +
 		", \"odometer\": " + scooterStatus.odometer +
-		", \"temperature\": " + scooterStatus.temperature +
 		", \"isLocked\": " + isLocked +
 		", \"updateStatus\": \"" + firmwareUpdateStatus + "\"" +
 	"}";

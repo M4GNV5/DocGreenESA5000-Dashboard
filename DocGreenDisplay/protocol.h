@@ -44,8 +44,6 @@ typedef struct
 
 	uint32_t mainboardVersion; // should be 0x0003027d
 	uint32_t odometer; // in meter
-
-	int8_t temperature; // 1/10 degree celsius
 } docgreen_status_t;
 
 uint16_t calculateChecksum(uint8_t *data)
@@ -138,7 +136,7 @@ void transmitInputInfo(docgreen_status_t& status)
 		data[6] = status.throttle;
 		data[7] = status.brake;
 
-		// XXX: we never request detailed info 3 as it does not seem to hold useful information
+		// XXX: we only request packets with known contents
 		static int detailedReqCounter = 0;
 		if(detailedReqCounter == 0)
 		{
@@ -146,16 +144,10 @@ void transmitInputInfo(docgreen_status_t& status)
 			data[4] = 0x32;
 			detailedReqCounter++;
 		}
-		else if(detailedReqCounter == 1)
+		else // if(detailedReqCounter == 1)
 		{
 			data[3] = 0x1F; // request detailed info 2
 			data[4] = 0x32;
-			detailedReqCounter++;
-		}
-		else
-		{
-			data[3] = 0xBE; // request temperature
-			data[4] = 0x06;
 			detailedReqCounter = 0;
 		}
 	}
@@ -220,16 +212,6 @@ void parseDetailedInfo(docgreen_status_t *status, uint8_t *buff)
 	}
 }
 
-void parseTemperatureInfo(docgreen_status_t *status, uint8_t *buff)
-{
-	if(buff[0] != 0x08) // expect length 7
-		return;
-	if(buff[2] != 0x07) // check if this is a temperature package
-		return;
-
-	status->temperature = buff[4];
-}
-
 void parseMotorInfoPacket(docgreen_status_t *status, uint8_t *buff)
 {
 	if(buff[0] != 0x0b) // expect length 11
@@ -282,9 +264,6 @@ bool receivePacket(docgreen_status_t *status)
 	{
 		case 0x11:
 			parseDetailedInfo(status, buff);
-			break;
-		case 0x25:
-			parseTemperatureInfo(status, buff);
 			break;
 		case 0x28:
 			parseMotorInfoPacket(status, buff);

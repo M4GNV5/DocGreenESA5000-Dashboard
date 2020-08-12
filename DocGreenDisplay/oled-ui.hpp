@@ -322,10 +322,6 @@ void showStatsScreen(docgreen_status_t& status)
 	printCommaValue(status.current, 100);
 	display.setCursor(0, display.getCursorY() + 5);
 
-	display.println("TEMP");
-	printCommaValue(status.temperature, 10);
-	display.setCursor(0, display.getCursorY() + 5);
-
 	display.println("ODO");
 	printCommaValue(status.odometer, 1000);
 	display.setCursor(0, display.getCursorY() + 5);
