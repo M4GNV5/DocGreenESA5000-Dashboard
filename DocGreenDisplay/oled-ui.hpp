@@ -93,28 +93,30 @@ uint8_t getAndResetButtons()
 	return val;
 }
 
-void genericSelectionMenu(const char *title, uint8_t button,
-	const char **options, int count, int *selection, bool *inMenu)
+void genericSelectionMenu(const char *title, const char **options, int count,
+	uint8_t &button, int &selection, bool &inMenu)
 {
-	if(!*inMenu && button & BUTTON_RIGHT)
-		*inMenu = true;
-	if(*inMenu)
+	if(!inMenu && button & BUTTON_RIGHT)
+	{
+		inMenu = true;
+		button &= ~BUTTON_RIGHT;
+	}
+
+	if(inMenu)
 		return;
 
-	int curr = *selection;
 	if(button & BUTTON_DOWN)
 	{
-		curr++;
-		if(curr >= count)
-			curr = 0;
+		selection++;
+		if(selection >= count)
+			selection = 0;
 	}
 	if(button & BUTTON_UP)
 	{
-		curr--;
-		if(curr < 0)
-			curr = count - 1;
+		selection--;
+		if(selection < 0)
+			selection = count - 1;
 	}
-	*selection = curr;
 
 	display.setTextSize(1);
 	display.println(title);
@@ -122,7 +124,7 @@ void genericSelectionMenu(const char *title, uint8_t button,
 
 	for(int i = 0; i < count; i++)
 	{
-		if(i == curr)
+		if(i == selection)
 		{
 			display.setTextColor(SSD1306_BLACK, SSD1306_WHITE);
 			display.println(options[i]);
@@ -436,8 +438,8 @@ bool showConfigMenu(docgreen_status_t& status, uint8_t button)
 
 	bool exitConfigMenu = !inMenu && button & BUTTON_LEFT;
 
-	genericSelectionMenu("CONF", button, menus,
-		sizeof(menus) / sizeof(const char *), &menu, &inMenu);
+	genericSelectionMenu("CONF", menus, sizeof(menus) / sizeof(const char *),
+		button, menu, inMenu);
 
 	if(inMenu)
 	{
@@ -484,8 +486,8 @@ void showMainMenu(docgreen_status_t& status)
 		"lock",
 		"intro",
 	};
-	genericSelectionMenu("MENU", button, menus,
-		sizeof(menus) / sizeof(const char *), &menu, &inMenu);
+	genericSelectionMenu("MENU", menus, sizeof(menus) / sizeof(const char *),
+		button, menu, inMenu);
 
 	if(inMenu)
 	{
