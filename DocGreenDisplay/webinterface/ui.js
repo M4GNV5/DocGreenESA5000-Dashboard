@@ -129,12 +129,6 @@ document.body.onload = function()
 		barStartPosition: 'right',
 	});
 
-	function updateStatusSpan(id, status)
-	{
-		var el = document.getElementById(id);
-		el.innerText = status ? "ON" : "OFF";
-	}
-
 	function updateData()
 	{
 		fetch('/data')
@@ -185,6 +179,12 @@ document.body.onload = function()
 	updateData();
 	updateConfig();
 };
+
+function updateStatusSpan(id, status)
+{
+	var el = document.getElementById(id);
+	el.innerText = status ? "ON" : "OFF";
+}
 
 function updateReadablePin()
 {

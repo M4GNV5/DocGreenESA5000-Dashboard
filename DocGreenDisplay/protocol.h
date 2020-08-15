@@ -130,7 +130,7 @@ void transmitInputInfo(docgreen_status_t& status)
 	static int counter = 0;
 	uint8_t data[sizeof(regularInputPacket2) + 2];
 
-	if(counter == 0 && status.enableStatsRequests)
+	if(counter == 5)
 	{
 		memcpy(data, detailRequestInputPacket, sizeof(detailRequestInputPacket));
 		data[6] = status.throttle;
@@ -164,7 +164,7 @@ void transmitInputInfo(docgreen_status_t& status)
 		data[6] = status.brake;
 	}
 
-	if(counter > 4)
+	if(counter > 4 || (counter > 3 && !status.enableStatsRequests))
 		counter = 0;
 	else
 		counter++;
@@ -228,6 +228,10 @@ void parseMotorInfoPacket(docgreen_status_t *status, uint8_t *buff)
 
 uint8_t readWithDefault(uint8_t defaultVal = 0x00)
 {
+	// give the scooter some time
+	if(!ScooterSerial.available())
+		delay(1);
+
 	if(ScooterSerial.available())
 		return ScooterSerial.read();
 	else
