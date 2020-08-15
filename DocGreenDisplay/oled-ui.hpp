@@ -345,12 +345,14 @@ void showDebugScreen(docgreen_status_t& status)
 
 	display.println("thro");
 	display.println(analogRead(THROTTLE_PIN));
+	display.println(status.throttle, 16);
 
 	display.println("brak");
 	display.println(analogRead(BRAKE_PIN));
+	display.println(status.brake, 16);
 
 	display.println("hand");
-	display.println(digitalRead(MECHANICAL_BRAKE_PIN) == HIGH ? "H" : "L");
+	display.println(digitalRead(MECHANICAL_BRAKE_PIN) == HIGH ? "HIGH" : "LOW");
 
 	display.println("time");
 	display.println(millis() / 1000);
