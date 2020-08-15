@@ -38,14 +38,22 @@ const char *letsEncryptX3RootCa = \
 "-----END CERTIFICATE-----\n";
 
 String firmwareUpdateUrl;
-String firmwareUpdateStatus = "pending";
+String firmwareUpdateStatus = "uninitialized";
 
 void checkForFirmwareUpdates()
 {
 	// wait for time from NTP server
 	time_t now = time(nullptr);
+	int ntpWait = 0;
 	while(now < 8 * 3600 * 2)
 	{
+		ntpWait++;
+		if(ntpWait > 20)
+		{
+			firmwareUpdateStatus = "NTP timeout";
+			return;
+		}
+
 		delay(500);
 		now = time(nullptr);
 	}
@@ -62,7 +70,7 @@ void checkForFirmwareUpdates()
 	else if(ret == HTTP_UPDATE_NO_UPDATES)
 		firmwareUpdateStatus = "no updates";
 	else
-		firmwareUpdateStatus = "Error: " + httpUpdate.getLastErrorString();
+		firmwareUpdateStatus = "error: " + httpUpdate.getLastErrorString();
 }
 
 void setupFirmwareUpdate()
@@ -81,6 +89,5 @@ void setupFirmwareUpdate()
 		return;
 	}
 
-	// TODO launch this in a thread?
-	checkForFirmwareUpdates();
+	firmwareUpdateStatus = "not started";
 }

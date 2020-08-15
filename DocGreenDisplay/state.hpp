@@ -51,3 +51,4 @@ extern String wifiStaPassword;
 // update.hpp
 extern String firmwareUpdateUrl;
 extern String firmwareUpdateStatus;
+extern void checkForFirmwareUpdates();

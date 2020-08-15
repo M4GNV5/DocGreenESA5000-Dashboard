@@ -119,6 +119,13 @@ static void handleUpdateConfig()
 	server.send(200, "text/plain", "ok");
 }
 
+static void handleFirwareUpdate()
+{
+	server.send(200, "text/plain", "starting update process...");
+
+	checkForFirmwareUpdates();
+}
+
 static void handleAction()
 {
 	String action = server.pathArg(0);
@@ -151,6 +158,7 @@ void webServerSetup()
 	server.on("/data", handleData);
 	server.on("/config", handleConfig);
 	server.on("/updateConfig", handleUpdateConfig);
+	server.on("/updateFirmware", handleFirwareUpdate);
 	server.on("/action/{}/{}", handleAction);
 
 	if(wifiApEnabled || wifiStaEnabled)
