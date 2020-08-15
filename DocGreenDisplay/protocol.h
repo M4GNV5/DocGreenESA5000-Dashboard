@@ -130,7 +130,7 @@ void transmitInputInfo(docgreen_status_t& status)
 	static int counter = 0;
 	uint8_t data[sizeof(regularInputPacket2) + 2];
 
-	if(counter > 5)
+	if(counter == 0 && status.enableStatsRequests)
 	{
 		memcpy(data, detailRequestInputPacket, sizeof(detailRequestInputPacket));
 		data[6] = status.throttle;
@@ -164,12 +164,12 @@ void transmitInputInfo(docgreen_status_t& status)
 		data[6] = status.brake;
 	}
 
-	if(counter > 5 || (counter > 4 && !status.enableStatsRequests))
+	if(counter > 4)
 		counter = 0;
 	else
 		counter++;
 
-	uint8_t len = data[0] + 2;
+	uint16_t len = data[0] + 2;
 	*(uint16_t *)&data[len] = calculateChecksum(data);
 
 	RX_DISABLE;
@@ -226,36 +226,36 @@ void parseMotorInfoPacket(docgreen_status_t *status, uint8_t *buff)
 	status->speed = *(uint16_t *)&buff[8]; // XXX we assume our architecture uses LE order here
 }
 
-uint8_t readBlocking()
+uint8_t readWithDefault(uint8_t defaultVal = 0x00)
 {
-	while(!ScooterSerial.available())
-		delay(1);
-
-	return ScooterSerial.read();
+	if(ScooterSerial.available())
+		return ScooterSerial.read();
+	else
+		return defaultVal;
 }
 bool receivePacket(docgreen_status_t *status)
 {
-	if(readBlocking() != 0x55)
+	if(readWithDefault() != 0x55)
 		return false;
-	if(readBlocking() != 0xAA)
+	if(readWithDefault() != 0xAA)
 		return false;
 
 	uint8_t buff[256];
 
-	uint8_t len = readBlocking();
+	uint8_t len = readWithDefault();
 	buff[0] = len;
-	if(len >= sizeof(buff) - 4)
+	if(len == 0 || len >= sizeof(buff) - 4)
 		return false;
 
-	uint8_t addr = readBlocking();
+	uint8_t addr = readWithDefault();
 	buff[1] = addr;
 
 	for(int i = 0; i < len; i++)
 	{
-		buff[i + 2] = readBlocking();
+		buff[i + 2] = readWithDefault(0xFF);
 	}
 
-	uint16_t actualChecksum = (uint16_t)readBlocking() | ((uint16_t)readBlocking() << 8);
+	uint16_t actualChecksum = (uint16_t)readWithDefault() | ((uint16_t)readWithDefault() << 8);
 	uint16_t expectedChecksum = calculateChecksum(buff);
 	if(actualChecksum != expectedChecksum)
 		return false;
