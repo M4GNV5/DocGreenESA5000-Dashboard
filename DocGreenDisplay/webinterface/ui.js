@@ -176,32 +176,14 @@ document.body.onload = function()
 
 			})
 			.catch(handleError)
-			.then(() => setTimeout(updateData, 200));
+			.then(() => setTimeout(updateData, 500));
 	}
 
 	speedGauge.draw();
 	batteryGauge.draw();
 	accelerationGauge.draw();
 	updateData();
-
-	fetch('/config')
-		.then(res => res.json())
-		.then(config => {
-
-			for(var key in config)
-			{
-				var el = document.getElementById("config-" + key);
-				if(el.type === "checkbox")
-					el.checked = !!config[key];
-				else
-					el.value = config[key];
-			}
-
-			if(config.hasOwnProperty("lock-pin"))
-				updateReadablePin();
-
-		})
-		.catch(handleError);
+	updateConfig();
 };
 
 function updateReadablePin()
@@ -226,6 +208,28 @@ function updateReadablePin()
 	el.innerText = readblePin.join(", ");
 }
 
+function updateConfig()
+{
+	return fetch('/config')
+		.then(res => res.json())
+		.then(config => {
+
+			for(var key in config)
+			{
+				var el = document.getElementById("config-" + key);
+				if(el.type === "checkbox")
+					el.checked = !!config[key];
+				else
+					el.value = config[key];
+			}
+
+			if(config.hasOwnProperty("lock-pin"))
+				updateReadablePin();
+
+		})
+		.catch(handleError);
+}
+
 function saveConfig()
 {
 	var fields = document.querySelectorAll('*[id^="config-"]');
@@ -247,6 +251,7 @@ function saveConfig()
 		method: 'POST',
 		body: params,
 	})
+		.then(updateConfig)
 		.catch(handleError);
 }
 
@@ -259,14 +264,15 @@ function doAction(name, value)
 function toggleLight()
 {
 	doAction("setLight", !isLightOn);
+	updateStatusSpan("light-status", !isLightOn);
 }
 function toggleEcoMode()
 {
 	doAction("setEcoMode", !isEcoModeOn);
+	updateStatusSpan("eco-status", !isEcoModeOn);
 }
 function toggleLock()
 {
 	doAction("setLock", !isLockOn);
+	updateStatusSpan("lock-status", !isLockOn);
 }
-
-
