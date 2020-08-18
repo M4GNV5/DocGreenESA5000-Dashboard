@@ -59,11 +59,14 @@
 						<td><span id="stat-mainboardVersion"></span></td>
 					</tr>
 					<tr>
-						<td>Dashboard Update</td>
+						<td>Firmware Update</td>
 						<td><span id="stat-updateStatus"></span></td>
 					</tr>
 				</tbody>
 			</table>
+
+			<br />
+			<button onclick="startFirmwareUpdate()">Start Firmware Update</button>
 
 			<h3>Configuration</h3>
 			<table>
@@ -116,10 +119,6 @@
 					<tr>
 						<td>WiFi Password</td>
 						<td><input type="text" id="config-sta-pw" /></td>
-					</tr>
-					<tr>
-						<td>Automatic Firmware Update</td>
-						<td><input type="checkbox" id="config-update-auto" /></td>
 					</tr>
 					<tr>
 						<td>Firmware Update URL</td>

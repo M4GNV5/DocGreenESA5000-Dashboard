@@ -170,7 +170,7 @@ document.body.onload = function()
 
 			})
 			.catch(handleError)
-			.then(() => setTimeout(updateData, 500));
+			.then(() => setTimeout(updateData, 200));
 	}
 
 	speedGauge.draw();
@@ -275,4 +275,14 @@ function toggleLock()
 {
 	doAction("setLock", !isLockOn);
 	updateStatusSpan("lock-status", !isLockOn);
+}
+
+function startFirmwareUpdate()
+{
+	if(!confirm("The Scooter will become unresponsive until the update is finished!"))
+		return;
+
+	fetch("/updateFirmware")
+		.then(() => document.getElementById("stat-updateStatus").innerText = "running...")
+		.catch(handleError)
 }

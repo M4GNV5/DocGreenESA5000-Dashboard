@@ -62,7 +62,7 @@ void checkForFirmwareUpdates()
 	client.setCACert(letsEncryptX3RootCa);
 	client.setTimeout(10);
 
-	httpUpdate.rebootOnUpdate(false);
+	httpUpdate.rebootOnUpdate(true);
 	t_httpUpdate_return ret = httpUpdate.update(client, firmwareUpdateUrl);
 
 	if(ret == HTTP_UPDATE_OK)
@@ -76,12 +76,6 @@ void checkForFirmwareUpdates()
 void setupFirmwareUpdate()
 {
 	firmwareUpdateUrl = preferences.getString(PREFERENCE_UPDATE_URL, DEFAULT_UPDATE_URL);
-
-	if(!preferences.getUChar(PREFERENCE_UPDATE_AUTO, 1))
-	{
-		firmwareUpdateStatus = "disabled";
-		return;
-	}
 
 	if(!wifiStaEnabled)
 	{

@@ -19,7 +19,6 @@ extern bool reenableLightsAfterError;
 #define PREFERENCE_STA_ENABLE "sta-enable"
 #define PREFERENCE_STA_SSID "sta-ssid"
 #define PREFERENCE_STA_PASSWORD "sta-pw"
-#define PREFERENCE_UPDATE_AUTO "update-auto"
 #define PREFERENCE_UPDATE_URL "update-url"
 
 
