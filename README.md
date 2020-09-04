@@ -24,12 +24,14 @@ a 128x32 OLED display.
 ## Dashboard PCB
 
 The initial solution was a perfboard + Arduino Nano + diode & resistor solution using
-[this circuit](pictures/circuit.svg). It worked well, but was too large to fit into the dashboard place.
+[this circuit](https://i.m4gnus.de/12d7a2.svg). It worked well, but was too large to fit into the dashboard place.
 Thus, after using a duct tape solution for a few months i decided to create a custom PCB with the same
-size as the original dashboard. Below shows an old version of the PCB in the scooter housing connected
-to a USB programmer.
+size as the original dashboard.
 
-![](pictures/builtin-off.jpg)
+On https://jakobloew.me/scooter one can find the manual for the dashboard, with a detailed description of
+all features and functionality.
+
+![](https://i.m4gnus.de/12d79a.JPG)
 
 ## Further Reading
 
@@ -47,13 +49,14 @@ to a USB programmer.
 
 ## Pictures
 
-[![](pictures/builtin-thumb.png)](https://i.m4gnus.de/11a8b4.mp4)
-![](pictures/builtin-with-error.jpg)
-[![](pictures/tuning-thumb.png)](https://i.m4gnus.de/d8401.mp4)
-![](pictures/sniffing.jpg)
-![](pictures/display-prototype.jpg)
-![](pictures/cablehell.jpg)
-![](pictures/display.jpg)
+![](https://i.m4gnus.de/12d799.JPG)
+![](https://i.m4gnus.de/12d798.PNG)
+![](https://i.m4gnus.de/12d7a4.PNG)
+
+## Photos of Prototypes & Development
+![](https://i.m4gnus.de/12d7a1.jpg)
+![](https://i.m4gnus.de/12d7a2.jpg)
+![](https://i.m4gnus.de/12d7a3.jpg)
 
 ## LICENSE
 
