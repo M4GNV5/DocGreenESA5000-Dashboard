@@ -79,7 +79,7 @@ void setLight(bool enabled)
 	setOption(0xF0, enabled);
 }
 
-uint8_t readWithDefault(uint8_t defaultVal = 0x00)
+uint8_t readWithDefault()
 {
 	// give the scooter some time
 	if(!ScooterSerial.available())
@@ -88,7 +88,7 @@ uint8_t readWithDefault(uint8_t defaultVal = 0x00)
 	if(ScooterSerial.available())
 		return ScooterSerial.read();
 	else
-		return defaultVal;
+		return 0x00;
 }
 bool receivePacket(docgreen_tiny_status_t& status)
 {
@@ -124,6 +124,12 @@ bool receivePacket(docgreen_tiny_status_t& status)
 					break;
 				case 6:
 					status.lights = val == 0x01;
+					break;
+				case 8:
+					status.speed = (uint16_t)val << 8;
+					break;
+				case 9:
+					status.speed |= val;
 					break;
 				case 10:
 					status.buttonPress = val == 0x01;
