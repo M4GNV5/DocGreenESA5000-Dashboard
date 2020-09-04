@@ -17,6 +17,7 @@ and contents are different.
 - [docgreen-protocol](docgreen-protocol.md): a list of bus messages and the meaning of some of the bytes
 - [MegaSniffer](MegaSniffer/): a small arduino program to sniff the internal bus using an Arduino Mega
 - [sniffs](sniffs/): a set of labeled sniffs
+- [TinyTuning](TinyTuning/): ATtiny45/85 program for tuning ESA Scooters
 - [DocGreenDisplay](DocGreenDisplay/): a replacement for the stock head unit using an Arduino Nano or ESP32 and
 a 128x32 OLED display.
 
