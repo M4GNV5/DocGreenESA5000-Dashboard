@@ -2,12 +2,15 @@
 #include "./protocol.h"
 
 #define SEND_REPEAT(func) do { \
-		func; \
 		delay(7); \
 		func; \
-		delay(11); \
+		delay(13); \
+		func; \
+		delay(5); \
 		func; \
 	} while(0)
+
+#define PACKETS_UNTIL_ACTION 20
 
 docgreen_tiny_status_t scooterStatus;
 static uint8_t throttlePressDuration = 0;
@@ -26,7 +29,7 @@ void loop()
 {
 	if(receivePacket(scooterStatus))
 	{
-		if(scooterStatus.speed > 5000)
+		if(scooterStatus.speed > 3000)
 		{
 			throttlePressDuration = 0;
 			brakePressDuration = 0;
@@ -37,16 +40,17 @@ void loop()
 			throttlePressDuration++;
 		else
 			throttlePressDuration = 0;
-		
+
 		if(scooterStatus.brake > 0x70)
 			brakePressDuration++;
 		else
 			brakePressDuration = 0;
 
-		if(throttlePressDuration == 20 && brakePressDuration < 5)
+		if(throttlePressDuration > PACKETS_UNTIL_ACTION && brakePressDuration < 5)
 		{
 			// hold throttle to tune / detune
 			scooterStatus.isTuned = !scooterStatus.isTuned;
+			throttlePressDuration = 0;
 
 			SEND_REPEAT(setEcoMode(!scooterStatus.ecoMode));
 			SEND_REPEAT(setMaxSpeed(scooterStatus.isTuned ? 35 : 20));
@@ -54,19 +58,18 @@ void loop()
 			SEND_REPEAT(setEcoMode(scooterStatus.ecoMode));
 
 			EEPROM.write(0, scooterStatus.isTuned ? 0xAA : 0);
-
-			throttlePressDuration = 0;
 		}
-		else if(throttlePressDuration < 5 && brakePressDuration > 20
+		else if(throttlePressDuration < 5 && brakePressDuration > PACKETS_UNTIL_ACTION
 			&& scooterStatus.buttonPress)
 		{
 			// hold brake and press button to lock / unlock
 			scooterStatus.isLocked = !scooterStatus.isLocked;
+			brakePressDuration = 0;
 
-			SEND_REPEAT(setLight(!scooterStatus.lights));
+			SEND_REPEAT(setLight(true));
 			SEND_REPEAT(setLock(scooterStatus.isLocked));
 			delay(200);
-			SEND_REPEAT(setLight(scooterStatus.lights));
+			SEND_REPEAT(setLight(false));
 		}
 	}
 }
