@@ -17,6 +17,7 @@ docgreen_status_t scooterStatus = {
 };
 
 bool reenableLightsAfterError = false;
+bool lightPinStatus = false;
 
 void setup()
 {
@@ -31,6 +32,9 @@ void setup()
 
 	pinMode(MECHANICAL_BRAKE_PIN, INPUT);
 	preferences.begin("scooter", false);
+
+	pinMode(LED_MOSFET_PIN, OUTPUT);
+	digitalWrite(LED_MOSFET_PIN, LOW);
 
 	wifiSetup();
 	initializeOledUi();
@@ -117,6 +121,12 @@ void loop()
 		{
 			hadButton = false;
 			pressedButtons |= BUTTON_POWER;
+		}
+
+		if(scooterStatus.lights != lightPinStatus)
+		{
+			lightPinStatus = scooterStatus.lights;
+			digitalWrite(LED_MOSFET_PIN, lightPinStatus ? HIGH : LOW);
 		}
 
 		if(reenableLightsAfterError)

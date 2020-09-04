@@ -6,6 +6,7 @@
 #define THROTTLE_PIN 39
 #define BRAKE_PIN 36
 #define MECHANICAL_BRAKE_PIN 34
+#define LED_MOSFET_PIN 32
 
 // the hall sensors have values between 0.8V and 5V resulting in 179-1024 for a 10bit 5V ADC
 #define THROTTLE_READ_MIN 225
