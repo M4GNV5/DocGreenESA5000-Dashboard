@@ -41,6 +41,7 @@
 #define M365_REG_ODOMETER2 0xB7
 #define M365_REG_TRIP_ODOMETER2 0xB9
 
+bool bluetoothEnabled = false;
 uint16_t m365Registers[0xB9 + 2];
 uint32_t tripStartOdometer = 0;
 uint32_t averageSpeedCount = 0;
@@ -128,6 +129,10 @@ class M365BleCallbacks: public BLECharacteristicCallbacks
 
 void bluetoothSetup()
 {
+	bluetoothEnabled = preferences.getUChar(PREFERENCE_BLUETOOTH_ENABLE, 0);
+	if(!bluetoothEnabled)
+		return;
+
 	// TODO: should we generate our own name?
 	BLEDevice::init(wifiApSsid.c_str());
 
@@ -154,6 +159,9 @@ void bluetoothSetup()
 
 void bluetoothLoop(docgreen_status_t& status)
 {
+	if(!bluetoothEnabled)
+		return;
+
 	if(tripStartOdometer == 0)
 		tripStartOdometer = status.odometer;
 	setReg2(M365_REG_TRIP_ODOMETER, status.odometer - tripStartOdometer);

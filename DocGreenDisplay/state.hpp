@@ -13,6 +13,7 @@ extern bool reenableLightsAfterError;
 #define PREFERENCE_REENABLE_LIGHT "reenable-light"
 #define PREFERENCE_LOCK_ON_BOOT "lock-on-boot"
 #define PREFERENCE_LOCK_PIN "lock-pin"
+#define PREFERENCE_BLUETOOTH_ENABLE "ble-enable"
 #define PREFERENCE_AP_ENABLE "ap-enable"
 #define PREFERENCE_AP_SSID "ap-ssid"
 #define PREFERENCE_AP_PASSWORD "ap-pw"
