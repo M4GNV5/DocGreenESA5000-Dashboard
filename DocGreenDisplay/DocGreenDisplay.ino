@@ -8,6 +8,7 @@
 #include "wifi.hpp"
 #include "oled-ui.hpp"
 #include "webserver.hpp"
+#include "bluetooth.hpp"
 #include "update.hpp"
 
 Preferences preferences;
@@ -39,6 +40,7 @@ void setup()
 	wifiSetup();
 	initializeOledUi();
 	webServerSetup();
+	bluetoothSetup();
 
 	if(wifiApEnabled || wifiStaEnabled)
 	{
@@ -154,6 +156,7 @@ void loop()
 		// TODO do this more often?
 		// not only after a packet from the motor controller was received?
 		updateOledUi(scooterStatus);
+		bluetoothLoop(scooterStatus);
 	}
 
 	webServerLoop();
