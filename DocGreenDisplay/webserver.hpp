@@ -104,7 +104,7 @@ static void handleUpdateConfig()
 
 	updateBoolPreference(PREFERENCE_SHOW_INTRO, preferences.getUChar(PREFERENCE_SHOW_INTRO, 1));
 	updateBoolPreference(PREFERENCE_LOCK_ON_BOOT, preferences.getUChar(PREFERENCE_LOCK_ON_BOOT, 0));
-	updateBoolPreference(PREFERENCE_BLUETOOTH_ENABLE, preferences.getUChar(PREFERENCE_BLUETOOTH_ENABLE, 1));
+	updateBoolPreference(PREFERENCE_BLUETOOTH_ENABLE, preferences.getUChar(PREFERENCE_BLUETOOTH_ENABLE, 0));
 	updateBoolPreference(PREFERENCE_AP_ENABLE, preferences.getUChar(PREFERENCE_AP_ENABLE, 1));
 	updateBoolPreference(PREFERENCE_STA_ENABLE, preferences.getUChar(PREFERENCE_STA_ENABLE, 0));
 	reenableLightsAfterError = updateBoolPreference(PREFERENCE_REENABLE_LIGHT, reenableLightsAfterError);
