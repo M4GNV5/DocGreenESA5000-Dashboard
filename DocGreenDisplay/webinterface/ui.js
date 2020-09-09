@@ -131,7 +131,7 @@ document.body.onload = function()
 
 	function updateData()
 	{
-		fetch('/data')
+		return fetch('/data')
 			.then(res => res.json())
 			.then(data => {
 
@@ -176,8 +176,9 @@ document.body.onload = function()
 	speedGauge.draw();
 	batteryGauge.draw();
 	accelerationGauge.draw();
-	updateData();
-	updateConfig();
+
+	updateData()
+		.then(() => updateConfig());
 };
 
 function updateStatusSpan(id, status)
@@ -227,7 +228,10 @@ function updateConfig()
 				updateReadablePin();
 
 		})
-		.catch(handleError);
+		.catch(err => {
+			handleError(err);
+			setTimeout(updateConfig, 500);
+		});
 }
 
 function saveConfig()
