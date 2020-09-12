@@ -4,6 +4,7 @@
 #include <BLEDevice.h>
 #include <BLEUtils.h>
 #include <BLEServer.h>
+#include <BLE2902.h>
 
 #include "state.hpp"
 #include "protocol.h"
@@ -139,10 +140,11 @@ void bluetoothSetup()
 	pServer = BLEDevice::createServer();
 	BLEService *pService = pServer->createService(BLE_M365_SERVICE_UUID);
 	rxCharacteristic = pService->createCharacteristic(BLE_M365_RX_UUID,
-		BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR);
+		BLECharacteristic::PROPERTY_WRITE);
 	txCharacteristic = pService->createCharacteristic(BLE_M365_TX_UUID,
-		BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_INDICATE);
+		BLECharacteristic::PROPERTY_NOTIFY);
 
+	txCharacteristic->addDescriptor(new BLE2902());
 	rxCharacteristic->setCallbacks(new M365BleCallbacks());
 
 	pService->start();
@@ -150,8 +152,7 @@ void bluetoothSetup()
 	BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
 	pAdvertising->addServiceUUID(BLE_M365_SERVICE_UUID);
 	pAdvertising->setScanResponse(true);
-	pAdvertising->setMinPreferred(0x06);  // functions that help with iPhone connections issue
-	pAdvertising->setMinPreferred(0x12);
+	pAdvertising->setMinPreferred(0x06);
 	BLEDevice::startAdvertising();
 
 	setReg2(M365_REG_MAGIC, 0x515C);
