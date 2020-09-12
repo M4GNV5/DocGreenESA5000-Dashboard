@@ -43,6 +43,7 @@
 #define M365_REG_TRIP_ODOMETER2 0xB9
 
 bool bluetoothEnabled = false;
+bool bluetoothControlEnabled = false;
 uint16_t m365Registers[0xB9 + 2];
 uint32_t tripStartOdometer = 0;
 uint32_t averageSpeedCount = 0;
@@ -106,7 +107,9 @@ class M365BleCallbacks: public BLECharacteristicCallbacks
 		{
 			response[6] = 1; // write success
 
-			if(offset == M365_REG_LOCK_COMMAND)
+			if(!bluetoothControlEnabled)
+				response[6] = 0; // write disabled
+			else if(offset == M365_REG_LOCK_COMMAND)
 				setLock(true);
 			else if(offset == M365_REG_UNLOCK_COMMAND)
 				setLock(false);
@@ -130,7 +133,8 @@ class M365BleCallbacks: public BLECharacteristicCallbacks
 
 void bluetoothSetup()
 {
-	bluetoothEnabled = preferences.getUChar(PREFERENCE_BLUETOOTH_ENABLE, 0);
+	bluetoothEnabled = preferences.getUChar(PREFERENCE_BLE_ENABLE, 0);
+	bluetoothControlEnabled = preferences.getUChar(PREFERENCE_BLE_CONTROL_ENABLE, 0);
 	if(!bluetoothEnabled)
 		return;
 
