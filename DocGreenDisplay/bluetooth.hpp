@@ -145,9 +145,9 @@ void bluetoothSetup()
 	pServer = BLEDevice::createServer();
 	BLEService *pService = pServer->createService(BLE_M365_SERVICE_UUID);
 	rxCharacteristic = pService->createCharacteristic(BLE_M365_RX_UUID,
-		BLECharacteristic::PROPERTY_WRITE);
+		BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR);
 	txCharacteristic = pService->createCharacteristic(BLE_M365_TX_UUID,
-		BLECharacteristic::PROPERTY_NOTIFY);
+		BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
 
 	txCharacteristic->addDescriptor(new BLE2902());
 	rxCharacteristic->setCallbacks(new M365BleCallbacks());
