@@ -18,6 +18,7 @@
 //      https://github.com/etransport/py9b
 
 #define M365_REG_MAGIC 0x00
+#define M365_REG_PIN 0x17
 #define M365_REG_ERROR 0x1B
 #define M365_REG_SOC 0x22
 #define M365_REG_RANGE_CONSERVATIVE 0x24
@@ -160,6 +161,7 @@ void bluetoothSetup()
 	BLEDevice::startAdvertising();
 
 	setReg2(M365_REG_MAGIC, 0x515C);
+	memset(&m365Registers[M365_REG_PIN], '0', 6);
 }
 
 void bluetoothLoop(docgreen_status_t& status)
