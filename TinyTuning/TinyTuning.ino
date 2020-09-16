@@ -66,10 +66,7 @@ void loop()
 			scooterStatus.isLocked = !scooterStatus.isLocked;
 			brakePressDuration = 0;
 
-			SEND_REPEAT(setLight(true));
 			SEND_REPEAT(setLock(scooterStatus.isLocked));
-			delay(200);
-			SEND_REPEAT(setLight(false));
 		}
 	}
 }
