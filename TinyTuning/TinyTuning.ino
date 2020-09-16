@@ -23,18 +23,28 @@ void setup()
 	scooterStatus.isTuned = EEPROM.read(0) == 0xAA;
 	if(scooterStatus.isTuned)
 		SEND_REPEAT(setMaxSpeed(35));
+
+	scooterStatus.isLocked = false;
+	scooterStatus.inDrive = false;
 }
 
 void loop()
 {
 	if(receivePacket(scooterStatus))
 	{
-		if(scooterStatus.speed > 3000)
+		if(!scooterStatus.inDrive && scooterStatus.speed > 2000)
+		{
+			scooterStatus.inDrive = true;
+		}
+		else if(scooterStatus.inDrive && scooterStatus.speed < 200)
 		{
 			throttlePressDuration = 0;
 			brakePressDuration = 0;
-			return;
+			scooterStatus.inDrive = false;
 		}
+
+		if(scooterStatus.inDrive)
+			return;
 
 		if(scooterStatus.throttle > 0x70)
 			throttlePressDuration++;

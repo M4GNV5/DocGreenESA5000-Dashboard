@@ -22,9 +22,10 @@ typedef struct
 	uint8_t lights : 1;
 	uint8_t buttonPress : 1;
 
-	// used and set in TinyTuning.ino, just defined here to save 2 bytes RAM
+	// used and set in TinyTuning.ino, just defined here to save RAM
 	uint8_t isTuned : 1;
 	uint8_t isLocked : 1;
+	uint8_t inDrive : 1;
 } docgreen_tiny_status_t;
 
 uint16_t calculateChecksum(uint8_t *data)
