@@ -534,6 +534,10 @@ void initializeOledUi()
 	display.setTextSize(1);
 	display.setTextColor(SSD1306_WHITE);
 
+	// XXX set contrast to max, see SSD1306 datasheet
+	display.ssd1306_command(SSD1306_SETCONTRAST);
+	display.ssd1306_command(255);
+
 	if(preferences.getUChar(PREFERENCE_SHOW_INTRO, 1))
 		showIntro();
 	if(preferences.getUChar(PREFERENCE_LOCK_ON_BOOT, 0))
