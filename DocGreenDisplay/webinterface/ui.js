@@ -236,8 +236,12 @@ function updateConfig()
 
 function saveConfig()
 {
+	var status = document.getElementById("save-status");
+	status.innerText = "saving...";
+
 	var fields = document.querySelectorAll('*[id^="config-"]');
 	var params = new URLSearchParams();
+
 
 	for(var field of fields)
 	{
@@ -255,8 +259,12 @@ function saveConfig()
 		method: 'POST',
 		body: params,
 	})
+		.then(() => status.innerText = "success")
 		.then(updateConfig)
-		.catch(handleError);
+		.catch(err => {
+			status.innerText = "failed";
+			handleError(err);
+		});
 }
 
 function doAction(name, value)
