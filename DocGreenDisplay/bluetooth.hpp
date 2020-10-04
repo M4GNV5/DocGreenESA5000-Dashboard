@@ -85,6 +85,18 @@ class M365BleCallbacks: public BLECharacteristicCallbacks
 		//if(calculateChecksum(buff + 2) != actualChecksum)
 		//	return;
 
+#if 0
+		for(int i = 0; i < len; i++)
+		{
+			if(buff[i] < 16)
+				Serial.print('0');
+
+			Serial.print(buff[i], 16);
+			Serial.print(' ');
+		}
+		Serial.println();
+#endif
+
 		uint8_t cmd = buff[4];
 		uint8_t offset = buff[5];
 
@@ -109,17 +121,41 @@ class M365BleCallbacks: public BLECharacteristicCallbacks
 			response[6] = 1; // write success
 
 			if(!bluetoothControlEnabled)
+			{
 				response[6] = 0; // write disabled
+			}
 			else if(offset == M365_REG_LOCK_COMMAND)
+			{
+				isLocked = true;
 				setLock(true);
+				setLock(true);
+				setLock(true);
+			}
 			else if(offset == M365_REG_UNLOCK_COMMAND)
+			{
+				isLocked = false;
 				setLock(false);
+				setLock(false);
+				setLock(false);
+			}
 			else if(offset == M365_REG_ECO_MODE)
-				setEcoMode((buff[5] == 0 && buff[6] == 0) ? false : true);
+			{
+				bool enabled = (buff[6] == 0 && buff[7] == 0) ? false : true;
+				setEcoMode(enabled);
+				setEcoMode(enabled);
+				setEcoMode(enabled);
+			}
 			else if(offset == M365_REG_LIGHTS)
-				setLight((buff[5] == 0 && buff[6] == 0) ? false : true);
+			{
+				bool enabled = (buff[6] == 0 && buff[7] == 0) ? false : true;
+				setLight(enabled);
+				setLight(enabled);
+				setLight(enabled);
+			}
 			else
+			{
 				response[6] = 0; // write failed
+			}
 
 			if(cmd == 0x03) // write without response
 				return;
@@ -138,6 +174,10 @@ void bluetoothSetup()
 	bluetoothControlEnabled = preferences.getUChar(PREFERENCE_BLE_CONTROL_ENABLE, 0);
 	if(!bluetoothEnabled)
 		return;
+
+#if 0
+	Serial.begin(115200);
+#endif
 
 	// TODO: should we generate our own name?
 	BLEDevice::init(wifiApSsid.c_str());
