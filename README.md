@@ -1,16 +1,17 @@
 # DocGreenESA5000-Dashboard
 
 This repository contains some utilities and selfmade documentation of the
-DocGreen ESA 5000 sold by Lidl in December 2019. Lidl also sold the Explorer ESA
-1919, which looks similar, but i can't promise its the same internally.
+DocGreen ESA 5000 sold by Lidl. Lidl also sold the Explorer ESA
+1919, which is identical protocol wise, but the front light is connected to the
+dashboard instead of the motor controller.
 The scooter is similar to the Xiaomi M365 however there are some differences:
 - the lights are mounted elsewhere
 - the light does not change when braking
-- it has no bluetooth (i count that as a plus)
+- it has no connecivity (no bluetooth, no proprietary app, no activation)
 - it has a "Zulassung nach eKFV" making it legal to drive on german roads when
 equipped with an insurance license plate
-- the internal communication uses the same addressing layer, but the addresses
-and contents are different.
+- the internal communication uses the same scheme, but the addresses and
+contents are different.
 
 ## In this repository
 
@@ -41,7 +42,7 @@ all features and functionality.
 - https://github.com/mxbode/ESA5000SetSpeedButton
 - https://github.com/crexodon/ESA5000_Dashboard
 
-### Related Projects for other Scooters
+### Projects for other Scooters
 - https://github.com/augisbud/m365_dashboard
 - https://github.com/etransport/ninebot-docs/wiki/protocol M365 protocol documentation.
 - https://github.com/camcamfresh/Xiaomi-M365-BLE-Controller-Replacement
