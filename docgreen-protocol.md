@@ -73,8 +73,10 @@ packets exluding the `55 AA` header and the checksum.
         - `BE 06` request `08 25 07` packet (see below) (e.g. `07 25 64 BE 06 03 28 29 00`)
         - `E8 02` request  packet with address `21` arg `EF`
         - `E9 10` request packet with address `33`
-    - byte 5: acceleration lever (min 2C, max C5)
-    - byte 6: electric brake lever (min 2C, max B5)
+    - byte 5: ?
+    - byte 6: acceleration lever (min 2C, max C5)
+    - byte 7: electric brake lever (min 2C, max B5)
+    - byte 8: ?
 - command `07`
     - `00 01 02 03 04 05 06 07 08 09` (index in decimal)
     - `08 25 07 BD 31 00 00 00 00 00`

@@ -133,19 +133,17 @@ void loop()
 
 		if(reenableLightsAfterError)
 		{
-			static bool hadError = false;
+			static uint8_t reenableTimeout = 0;
 			static bool lightShouldBeOn = false;
-			if(scooterStatus.errorCode != 0)
-			{
-				hadError = true;
-			}
-			else if(hadError)
-			{
-				// if the lights were on before turn on the lights after an error
-				if(lightShouldBeOn && !scooterStatus.lights)
-					setLight(true);
 
-				hadError = false;
+			if(reenableTimeout > 0)
+				reenableTimeout--;
+			if(scooterStatus.buttonPress)
+				reenableTimeout = 20;
+
+			if(lightShouldBeOn && !scooterStatus.lights && reenableTimeout == 0)
+			{
+				setLight(true);
 			}
 			else if(scooterStatus.lights != lightShouldBeOn)
 			{
