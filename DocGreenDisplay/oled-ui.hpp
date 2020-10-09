@@ -188,7 +188,8 @@ void showLockMenu(docgreen_status_t& status)
 	static int index = 0;
 	static bool failed = false;
 
-	static unsigned lastToggle = 0;
+	static uint32_t lastToggle = 0;
+	static uint32_t lastMove = 0;
 	if(lastToggle == 0)
 	{
 		setLock(true);
@@ -200,10 +201,14 @@ void showLockMenu(docgreen_status_t& status)
 		lastToggle = 1;
 	}
 
-	if(status.speed > 100 && lastToggle + 400 < millis())
+	uint32_t now = millis();
+	if(status.speed > 100)
+		lastMove = now;
+
+	if(lastMove + 3000 > now && lastToggle + 400 < now)
 	{
 		setLight(!status.lights);
-		lastToggle = millis();
+		lastToggle = now;
 	}
 
 	display.setTextSize(1);
@@ -293,11 +298,11 @@ void showInfoScreen(docgreen_status_t& status)
 	display.setTextSize(1);
 	display.setCursor(0, display.getCursorY() + 5);
 
-	display.println("MODE");
-	display.setTextSize(2);
-	display.print(status.ecoMode ? "E" : "S");
-	display.println(status.lights ? " N" : " D");
-	display.setTextSize(1);
+	display.println(status.ecoMode ? "ECO" : "SPORT");
+	display.setCursor(0, display.getCursorY() + 5);
+
+	display.println("LIGHT");
+	display.println(status.lights ? "ON" : "OFF");
 	display.setCursor(0, display.getCursorY() + 5);
 
 	display.println("TIME");
@@ -421,8 +426,11 @@ void showWifiMenu(uint8_t button)
 
 		display.println("turn");
 		display.println("on?");
-		if(!onAfterReboot && button & BUTTON_RIGHT)
+		if(button & BUTTON_RIGHT)
+		{
 			preferences.putUChar(PREFERENCE_AP_ENABLE, 1);
+			onAfterReboot = true;
+		}
 	}
 }
 
@@ -536,7 +544,7 @@ void initializeOledUi()
 
 	// XXX set contrast to max, see SSD1306 datasheet
 	display.ssd1306_command(SSD1306_SETCONTRAST);
-	display.ssd1306_command(255);
+	display.ssd1306_command(0xFF);
 
 	if(preferences.getUChar(PREFERENCE_SHOW_INTRO, 1))
 		showIntro();
