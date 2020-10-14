@@ -103,15 +103,20 @@ bool receivePacket(docgreen_tiny_status_t& status)
 	if(len == 0 || (addr != 0x25 && addr != 0x28))
 		return false;
 
-	uint16_t sum = 0;
-	for(int i = 0; i < len; i++)
+	uint16_t sum = len;
+	sum += addr;
+	len += 2;
+
+	for(int i = 2; i < len; i++)
 	{
 		uint8_t val = readWithDefault();
 		sum += val;
 
 		if(addr == 0x25) // input info packet
 		{
-			if(i == 5)
+			if(i == 2 && val != 0x60)
+				return false;
+			else if(i == 5)
 				status.throttle = val;
 			else if(i == 6)
 				status.brake = val;
