@@ -1,0 +1,12 @@
+{
+	"speed": 12345,
+	"soc": 91,
+	"throttle": 40,
+	"brake": 120,
+	"lights": 1,
+	"errorCode": 0,
+	"totalOperationTime": 14234,
+	"voltage": 3704,
+	"mainboardVersion": 42666,
+	"odometer": 123
+}

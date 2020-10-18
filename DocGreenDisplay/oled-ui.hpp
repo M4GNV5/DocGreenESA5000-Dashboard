@@ -537,7 +537,7 @@ void initializeOledUi()
 	I2CInstance.begin(17, 16, 400000);
 #endif
 
-    display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+	display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
 
 	display.setRotation(1);
 	display.setTextSize(1);
@@ -563,35 +563,35 @@ void initializeOledUi()
 
 void updateOledUi(docgreen_status_t &status)
 {
-    static bool inDrive = false;
-    if(!inDrive && status.speed > 5000)
-    {
-        inDrive = true;
-        status.enableStatsRequests = false;
-    }
-    else if(inDrive && status.speed < 1000)
-    {
-        inDrive = false;
-        status.enableStatsRequests = true;
+	static bool inDrive = false;
+	if(!inDrive && status.speed > 5000)
+	{
+		inDrive = true;
+		status.enableStatsRequests = false;
+	}
+	else if(inDrive && status.speed < 1000)
+	{
+		inDrive = false;
+		status.enableStatsRequests = true;
 
-        //reset buttons as they might have been pressed during drive
-        getAndResetButtons();
-    }
+		//reset buttons as they might have been pressed during drive
+		getAndResetButtons();
+	}
 
-    display.clearDisplay();
+	display.clearDisplay();
 	display.setCursor(0, 0);
 
-    //if(true) showDebugScreen(status); else
-    if(status.errorCode != 0)
-        showErrorScreen(status);
-    else if(status.shuttingDown)
-        showByeScreen(status);
-    else if(isLocked)
-        showLockMenu(status);
-    else if(inDrive)
-        showDriveScreen(status);
-    else
-        showMainMenu(status);
+	//if(true) showDebugScreen(status); else
+	if(status.errorCode != 0)
+		showErrorScreen(status);
+	else if(status.shuttingDown)
+		showByeScreen(status);
+	else if(isLocked)
+		showLockMenu(status);
+	else if(inDrive)
+		showDriveScreen(status);
+	else
+		showMainMenu(status);
 
-    display.display();
+	display.display();
 }

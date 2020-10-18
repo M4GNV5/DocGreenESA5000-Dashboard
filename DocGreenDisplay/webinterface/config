@@ -1,0 +1,11 @@
+{
+    "max-speed": 25,
+    "show-intro": 1,
+    "reenable-light": 0,
+    "lock-on-boot": 1,
+    "lock-pin": "012345",
+    "ap-ssid": "Scooter Dashboard",
+    "ap-pw": "FossScootersAreCool",
+    "sta-ssid": "",
+    "sta-pw": ""
+}
