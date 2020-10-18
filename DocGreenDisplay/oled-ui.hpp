@@ -394,6 +394,7 @@ void showTuningMenu(uint8_t button)
 	{
 		setMaxSpeed(speed);
 		configuredSpeed = speed;
+		preferences.putUChar(PREFERENCE_MAX_SPEED, speed);
 	}
 }
 
