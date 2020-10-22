@@ -387,8 +387,10 @@ void showTuningMenu(uint8_t button)
 	if(button & BUTTON_UP)
 		speed--;
 
-	if(speed > 35)
-		speed = 35;
+	if(speed < 12)
+		speed = 40;
+	if(speed > 40)
+		speed = 12;
 
 	if(button & BUTTON_RIGHT)
 	{

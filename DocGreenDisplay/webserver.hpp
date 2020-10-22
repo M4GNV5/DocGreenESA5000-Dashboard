@@ -90,8 +90,10 @@ static void handleUpdateConfig()
 {
 	String maxSpeedStr = server.arg(PREFERENCE_MAX_SPEED);
 	uint32_t maxSpeed = atoi(maxSpeedStr.c_str());
-	if(maxSpeed >= 5 && maxSpeed <= 35 && maxSpeed != configuredSpeed)
+	if(maxSpeed >= 12 && maxSpeed <= 40 && maxSpeed != configuredSpeed)
 	{
+		setMaxSpeed(maxSpeed);
+		setMaxSpeed(maxSpeed);
 		setMaxSpeed(maxSpeed);
 
 		configuredSpeed = maxSpeed;
@@ -136,6 +138,8 @@ static void handleAction()
 	if(action == "setEcoMode")
 	{
 		setEcoMode(enabled);
+		setEcoMode(enabled);
+		setEcoMode(enabled);
 	}
 	else if(action == "setLock")
 	{
@@ -148,6 +152,8 @@ static void handleAction()
 	}
 	else if(action == "setLight")
 	{
+		setLight(enabled);
+		setLight(enabled);
 		setLight(enabled);
 	}
 
