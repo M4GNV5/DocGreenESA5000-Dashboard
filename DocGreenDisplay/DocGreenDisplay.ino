@@ -7,6 +7,7 @@
 
 #include "wifi.hpp"
 #include "oled-ui.hpp"
+#include "reenable-light.hpp"
 #include "webserver.hpp"
 #include "bluetooth.hpp"
 #include "update.hpp"
@@ -17,7 +18,6 @@ docgreen_status_t scooterStatus = {
 	.enableStatsRequests = true,
 };
 
-bool reenableLightsAfterError = false;
 bool lightPinStatus = false;
 
 void setup()
@@ -56,9 +56,7 @@ void setup()
 	{
 		// send default max speed 3 times, to make sure the packet isn't lost
 		setMaxSpeed(configuredSpeed);
-		delay(50);
 		setMaxSpeed(configuredSpeed);
-		delay(50);
 		setMaxSpeed(configuredSpeed);
 	}
 
@@ -131,25 +129,7 @@ void loop()
 			digitalWrite(LED_MOSFET_PIN, lightPinStatus ? HIGH : LOW);
 		}
 
-		if(reenableLightsAfterError)
-		{
-			static uint8_t reenableTimeout = 0;
-			static bool lightShouldBeOn = false;
-
-			if(reenableTimeout > 0)
-				reenableTimeout--;
-			if(scooterStatus.buttonPress)
-				reenableTimeout = 20;
-
-			if(lightShouldBeOn && !scooterStatus.lights && reenableTimeout == 0)
-			{
-				setLight(true);
-			}
-			else if(scooterStatus.lights != lightShouldBeOn)
-			{
-				lightShouldBeOn = scooterStatus.lights;
-			}
-		}
+		reenableLightLoop(scooterStatus);
 
 		// TODO do this more often?
 		// not only after a packet from the motor controller was received?

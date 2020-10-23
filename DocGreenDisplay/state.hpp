@@ -7,7 +7,6 @@
 // DocGreenDisplay.ino
 extern docgreen_status_t scooterStatus;
 extern Preferences preferences;
-extern bool reenableLightsAfterError;
 #define PREFERENCE_MAX_SPEED "max-speed"
 #define PREFERENCE_SHOW_INTRO "show-intro"
 #define PREFERENCE_REENABLE_LIGHT "reenable-light"
@@ -22,6 +21,11 @@ extern bool reenableLightsAfterError;
 #define PREFERENCE_STA_SSID "sta-ssid"
 #define PREFERENCE_STA_PASSWORD "sta-pw"
 #define PREFERENCE_UPDATE_URL "update-url"
+
+
+// reenable-light.hpp
+extern bool reenableLightsAfterError;
+void internalSetLight(bool shouldBeOn);
 
 
 // oled-ui.hpp

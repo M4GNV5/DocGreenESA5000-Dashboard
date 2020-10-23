@@ -207,7 +207,7 @@ void showLockMenu(docgreen_status_t& status)
 
 	if(lastMove + 3000 > now && lastToggle + 400 < now)
 	{
-		setLight(!status.lights);
+		internalSetLight(!status.lights);
 		lastToggle = now;
 	}
 
@@ -468,7 +468,7 @@ bool showConfigMenu(docgreen_status_t& status, uint8_t button)
 				break;
 			case 2:
 				delay(50);
-				setLight(!status.lights);
+				internalSetLight(!status.lights);
 				inMenu = false;
 				break;
 			case 3:

@@ -152,9 +152,7 @@ static void handleAction()
 	}
 	else if(action == "setLight")
 	{
-		setLight(enabled);
-		setLight(enabled);
-		setLight(enabled);
+		internalSetLight(enabled);
 	}
 
 	server.send(200, "text/plain", "ok");

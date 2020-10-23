@@ -148,9 +148,7 @@ class M365BleCallbacks: public BLECharacteristicCallbacks
 			else if(offset == M365_REG_LIGHTS)
 			{
 				bool enabled = (buff[6] == 0 && buff[7] == 0) ? false : true;
-				setLight(enabled);
-				setLight(enabled);
-				setLight(enabled);
+				internalSetLight(enabled);
 			}
 			else
 			{
