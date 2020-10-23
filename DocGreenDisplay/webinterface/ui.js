@@ -259,6 +259,10 @@ function saveConfig()
 		method: 'POST',
 		body: params,
 	})
+		.then(res => res.ok
+			? Promise.resolve()
+			: Promise.reject(new Error('non 200 response code'))
+		)
 		.then(() => status.innerText = "success")
 		.then(updateConfig)
 		.catch(err => {
