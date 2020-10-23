@@ -62,11 +62,11 @@ void checkForFirmwareUpdates()
 	client.setCACert(letsEncryptX3RootCa);
 	client.setTimeout(10);
 
-	httpUpdate.rebootOnUpdate(true);
+	httpUpdate.rebootOnUpdate(false);
 	t_httpUpdate_return ret = httpUpdate.update(client, firmwareUpdateUrl);
 
 	if(ret == HTTP_UPDATE_OK)
-		firmwareUpdateStatus = "success";
+		firmwareUpdateStatus = "success, please restart";
 	else if(ret == HTTP_UPDATE_NO_UPDATES)
 		firmwareUpdateStatus = "no updates";
 	else
