@@ -2,6 +2,8 @@ var isLightOn = false;
 var isEcoModeOn = false;
 var isLockOn = false;
 
+var statusSpanTimeout = 0;
+
 function handleError(err)
 {
 	console.error(err);
@@ -135,13 +137,20 @@ document.body.onload = function()
 			.then(res => res.json())
 			.then(data => {
 
-				isLightOn = !!data.lights;
-				isEcoModeOn = !!data.ecoMode;
-				isLockOn = !!data.isLocked;
+				if(statusSpanTimeout > 0)
+				{
+					statusSpanTimeout--;
+				}
+				else
+				{
+					isLightOn = !!data.lights;
+					isEcoModeOn = !!data.ecoMode;
+					isLockOn = !!data.isLocked;
 
-				updateStatusSpan("light-status", isLightOn);
-				updateStatusSpan("eco-status", isEcoModeOn);
-				updateStatusSpan("lock-status", isLockOn);
+					updateStatusSpan("light-status", isLightOn);
+					updateStatusSpan("eco-status", isEcoModeOn);
+					updateStatusSpan("lock-status", isLockOn);
+				}
 
 				speedGauge.value = data.speed / 1000;
 				batteryGauge.value = data.soc;
@@ -281,16 +290,19 @@ function toggleLight()
 {
 	doAction("setLight", !isLightOn);
 	updateStatusSpan("light-status", !isLightOn);
+	statusSpanTimeout = 3;
 }
 function toggleEcoMode()
 {
 	doAction("setEcoMode", !isEcoModeOn);
 	updateStatusSpan("eco-status", !isEcoModeOn);
+	statusSpanTimeout = 3;
 }
 function toggleLock()
 {
 	doAction("setLock", !isLockOn);
 	updateStatusSpan("lock-status", !isLockOn);
+	statusSpanTimeout = 3;
 }
 
 function startFirmwareUpdate()
