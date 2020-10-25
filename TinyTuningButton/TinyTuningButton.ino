@@ -8,18 +8,18 @@ static bool isTuned = false;
 
 void toggleTuning()
 {
-	if(isTuned)
-		SEND_REPEAT(setMaxSpeed(20));
-	else
-		SEND_REPEAT(setMaxSpeed(35));
-
 	isTuned = !isTuned;
 	EEPROM.write(0, isTuned ? (uint8_t)0xAA : (uint8_t)0x00);
+
+	if(isTuned)
+		SEND_REPEAT(setMaxSpeed(35));
+	else
+		SEND_REPEAT(setMaxSpeed(20));
 
 	SEND_REPEAT(setEcoMode(false));
 	delay(500);
 	SEND_REPEAT(setEcoMode(true));
-	delay(500);
+	delay(1000);
 	SEND_REPEAT(setEcoMode(false));
 }
 
@@ -44,13 +44,6 @@ void setup()
     ScooterSerial.begin(115200);
 	ScooterSerial.stopListening();
 
-	// initial initialization to 'tuned'
-	if(EEPROM.read(1) != 0x2A)
-	{
-		EEPROM.write(0, 0xAA);
-		EEPROM.write(1, 0x2A);
-	}
-
 	delay(3000);
 
 	if(EEPROM.read(0) == 0xAA)
@@ -59,7 +52,7 @@ void setup()
 		isTuned = true;
 
 		SEND_REPEAT(setEcoMode(true));
-		delay(500);
+		delay(1000);
 		SEND_REPEAT(setEcoMode(false));
 	}
 
