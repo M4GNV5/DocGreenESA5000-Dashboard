@@ -3,12 +3,25 @@
 #include <stdint.h>
 #include <SoftwareSerial.h>
 
+#define SEND_REPEAT(func) do { \
+		delay(7); \
+		func; \
+		delay(13); \
+		func; \
+		delay(5); \
+		func; \
+	} while(0)
+
 // we could use protocol.h from DocGreenDisplay, but it's docgreen_status_t
 // structure alone needs 12% of the ATtiny's RAM (31 of 256 byte)
 // thus below are parts rewritten without using buffers or large structs
 
+#ifndef UART_TX_PIN
 #define UART_TX_PIN 3
+#endif
+#ifndef UART_RX_PIN
 #define UART_RX_PIN 4
+#endif
 SoftwareSerial ScooterSerial(UART_RX_PIN, UART_TX_PIN);
 
 typedef struct

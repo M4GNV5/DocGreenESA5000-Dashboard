@@ -1,16 +1,7 @@
 #include <EEPROM.h>
 #include "./protocol.h"
 
-#define SEND_REPEAT(func) do { \
-		delay(7); \
-		func; \
-		delay(13); \
-		func; \
-		delay(5); \
-		func; \
-	} while(0)
-
-#define PACKETS_UNTIL_ACTION 20
+#define PACKETS_UNTIL_ACTION 50
 
 docgreen_tiny_status_t scooterStatus;
 static uint8_t throttlePressDuration = 0;
