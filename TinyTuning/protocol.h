@@ -28,54 +28,61 @@ typedef struct
 	uint8_t inDrive : 1;
 } docgreen_tiny_status_t;
 
-uint16_t calculateChecksum(uint8_t *data)
+inline void sendUint16LE(uint16_t val)
 {
-	uint8_t len = data[0] + 2;
-	uint16_t sum = 0;
-	for(int i = 0; i < len; i++)
-		sum += data[i];
-
-	sum ^= 0xFFFF;
-	return sum;
+	ScooterSerial.write((val & 0xff));
+	ScooterSerial.write((val >> 8));
 }
 
 void setMaxSpeed(uint8_t speed)
 {
-	uint8_t data[] = {
+	const uint8_t PROGMEM data[] = {
 		0x55, 0xAA, 0x04, 0x22, 0x01, 0xF2,
-		0, 0, //rpm
-		0, 0, //checksum
 	};
 
-	// XXX we assume our architecture uses LE order here
-	*(uint16_t *)&data[6] = ((uint16_t)speed * 252) / 10;
-	*(uint16_t *)&data[8] = calculateChecksum(data + 2);
+	uint16_t rpm = ((uint16_t)speed * 252) / 10;
 
+	uint16_t checksum = 0x119; // sum of 0x04, 0x22, 0x01, 0xF2
+	checksum += (rpm & 0xff);
+	checksum += (rpm >> 8);
+	checksum ^= 0xFFFF;
+
+	ScooterSerial.stopListening();
 	ScooterSerial.write(data, sizeof(data) / sizeof(uint8_t));
+	sendUint16LE(rpm);
+	sendUint16LE(checksum);
+	ScooterSerial.listen();
 }
 
 static void setOption(uint8_t id, bool enabled)
 {
-	uint8_t data[] = {
-		0x55, 0xAA, 0x04, 0x22, 0x01, id,
-		enabled ? (uint8_t)0x01 : (uint8_t)0x00,
-		0x00,
-		0, 0, //checksum
+	const uint8_t PROGMEM data[] = {
+		0x55, 0xAA, 0x04, 0x22, 0x01,
 	};
 
-	*(uint16_t *)&data[8] = calculateChecksum(data + 2);
+	uint16_t checksum = 0x27; // sum of 0x04, 0x22, 0x01
+	checksum += id;
+	if(enabled)
+		checksum += 1;
+	checksum ^= 0xFFFF;
 
+	ScooterSerial.stopListening();
 	ScooterSerial.write(data, sizeof(data) / sizeof(uint8_t));
+	ScooterSerial.write(id);
+	ScooterSerial.write(enabled ? (uint8_t)0x01 : (uint8_t)0x00);
+	ScooterSerial.write((uint8_t)0x00);
+	sendUint16LE(checksum);
+	ScooterSerial.listen();
 }
-void setEcoMode(bool enabled)
+inline void setEcoMode(bool enabled)
 {
 	setOption(0x7C, enabled);
 }
-void setLock(bool enabled)
+inline void setLock(bool enabled)
 {
 	setOption(0x7D, enabled);
 }
-void setLight(bool enabled)
+inline void setLight(bool enabled)
 {
 	setOption(0xF0, enabled);
 }
@@ -84,7 +91,7 @@ uint8_t readWithDefault()
 {
 	// give the scooter some time
 	if(!ScooterSerial.available())
-		delay(3);
+		delay(1);
 
 	if(ScooterSerial.available())
 		return ScooterSerial.read();
