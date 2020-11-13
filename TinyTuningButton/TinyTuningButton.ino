@@ -6,10 +6,11 @@
 
 static bool isTuned = false;
 
-void toggleTuning()
+void toggleTuning(bool save)
 {
 	isTuned = !isTuned;
-	EEPROM.write(0, isTuned ? (uint8_t)0xAA : (uint8_t)0x00);
+	if(save)
+		EEPROM.write(0, isTuned ? (uint8_t)0xAA : (uint8_t)0x00);
 
 	if(isTuned)
 		SEND_REPEAT(setMaxSpeed(35));
@@ -23,55 +24,46 @@ void toggleTuning()
 	SEND_REPEAT(setEcoMode(false));
 }
 
-uint8_t buttonCount = 0;
-void buttonInterruptHandler()
-{
-	static unsigned long lastChange = 0;
-	unsigned long now = millis();
-	unsigned long diff = now - lastChange;
-
-	if(diff < 100) // 100ms debounce
-		return;
-	if(diff > 1500)
-		buttonCount = 0;
-
-	lastChange = now;
-	buttonCount++;
-}
-
 void setup()
 {
     ScooterSerial.begin(115200);
 	ScooterSerial.stopListening();
 
-	delay(3000);
+	delay(1000);
 
 	if(EEPROM.read(0) == 0xAA)
-	{
-		SEND_REPEAT(setMaxSpeed(35));
-		isTuned = true;
-
-		SEND_REPEAT(setEcoMode(true));
-		delay(1000);
-		SEND_REPEAT(setEcoMode(false));
-	}
+		toggleTuning(false);
 
 	pinMode(2, INPUT_PULLUP);
-	attachInterrupt(2, buttonInterruptHandler, FALLING);
 }
 
 void loop()
 {
-	if(isTuned && buttonCount >= 3)
-	{
-		buttonCount = 0;
-		toggleTuning();
-	}
-	else if(!isTuned && buttonCount >= 5)
-	{
-		buttonCount = 0;
-		toggleTuning();
-	}
+	static uint8_t pressCount = 0;
+	static bool wasPressed = false;
+	static unsigned long lastPress = 0;
 
-	delay(300);
+	bool isPressed = digitalRead(2) == LOW;
+	unsigned long diff = millis() - lastPress;
+
+	if(wasPressed && !isPressed && diff > 50)
+	{
+		if(diff > 1500)
+			pressCount = 0;
+
+		pressCount++;
+		lastPress = millis();
+	}
+	wasPressed = isPressed;
+
+	if(isTuned && pressCount >= 3)
+	{
+		pressCount = 0;
+		toggleTuning(true);
+	}
+	else if(!isTuned && pressCount >= 5)
+	{
+		pressCount = 0;
+		toggleTuning(true);
+	}
 }
