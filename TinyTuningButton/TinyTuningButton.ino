@@ -26,7 +26,7 @@ void toggleTuning(bool save)
 
 void setup()
 {
-    ScooterSerial.begin(115200);
+	ScooterSerial.begin(115200);
 	ScooterSerial.stopListening();
 
 	delay(1000);
