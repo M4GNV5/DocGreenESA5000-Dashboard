@@ -3,12 +3,16 @@
 #include <stdint.h>
 #include <SoftwareSerial.h>
 
+// send a packet multiple times with small delays to make sure it arrived
+// even when one of them collided with another packet on the bus
 #define SEND_REPEAT(func) do { \
-		delay(7); \
+		delay(37);
 		func; \
-		delay(13); \
+		delay(67); \
 		func; \
-		delay(5); \
+		delay(133); \
+		func; \
+		delay(45); \
 		func; \
 	} while(0)
 

@@ -5,6 +5,7 @@
 #include "./protocol.h"
 
 static bool isTuned = false;
+static bool isLocked = false;
 
 void toggleTuning(bool save)
 {
@@ -17,8 +18,6 @@ void toggleTuning(bool save)
 	else
 		SEND_REPEAT(setMaxSpeed(20));
 
-	SEND_REPEAT(setEcoMode(false));
-	delay(500);
 	SEND_REPEAT(setEcoMode(true));
 	delay(1000);
 	SEND_REPEAT(setEcoMode(false));
@@ -26,6 +25,8 @@ void toggleTuning(bool save)
 
 void setup()
 {
+	pinMode(2, INPUT_PULLUP);
+
 	ScooterSerial.begin(115200);
 	ScooterSerial.stopListening();
 
@@ -33,8 +34,6 @@ void setup()
 
 	if(EEPROM.read(0) == 0xAA)
 		toggleTuning(false);
-
-	pinMode(2, INPUT_PULLUP);
 }
 
 void loop()
@@ -56,14 +55,20 @@ void loop()
 	}
 	wasPressed = isPressed;
 
-	if(isTuned && pressCount >= 3)
+	if(diff > 500)
 	{
-		pressCount = 0;
-		toggleTuning(true);
-	}
-	else if(!isTuned && pressCount >= 5)
-	{
-		pressCount = 0;
-		toggleTuning(true);
+		if(pressCount >= 8)
+		{
+			isLocked = !isLocked;
+			SEND_REPEAT(setLock(isLocked));
+
+			pressCount = 0;
+		}
+		else if((!isTuned && pressCount >= 5)
+			|| (isTuned && pressCount >= 3))
+		{
+			toggleTuning(true);
+			pressCount = 0;
+		}
 	}
 }
