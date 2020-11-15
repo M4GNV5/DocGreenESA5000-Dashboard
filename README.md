@@ -17,10 +17,16 @@ contents are different.
 
 - [docgreen-protocol](docgreen-protocol.md): a list of bus messages and the meaning of some of the bytes
 - [MegaSniffer](MegaSniffer/): a small arduino program to sniff the internal bus using an Arduino Mega
-- [sniffs](sniffs/): a set of labeled sniffs
-- [TinyTuning](TinyTuning/): ATtiny45/85 program for tuning ESA Scooters
+- [TinyTuning](TinyTuning/): ATtiny45/85 program for tuning ESA Scooters (bus read and write)
+- [TinyTuningButton](TinyTuningButton/): ATtiny45/85 program for tuning ESA Scooters (bus write-only variant)
 - [DocGreenDisplay](DocGreenDisplay/): a replacement for the stock head unit using an Arduino Nano or ESP32 and
 a 128x32 OLED display.
+
+## TinyTuning(Button)
+
+A small PCB with an ATTiny45 which is connected between dashboard and ECU allowing to set the max speed.
+
+![](https://i.m4gnus.de/146d5b.JPG)
 
 ## Dashboard PCB
 
