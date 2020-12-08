@@ -6,13 +6,11 @@
 // send a packet multiple times with small delays to make sure it arrived
 // even when one of them collided with another packet on the bus
 #define SEND_REPEAT(func) do { \
-		delay(37);
+		delay(7); \
 		func; \
-		delay(67); \
+		delay(13); \
 		func; \
-		delay(133); \
-		func; \
-		delay(45); \
+		delay(5); \
 		func; \
 	} while(0)
 
@@ -68,7 +66,7 @@ void setMaxSpeed(uint8_t speed)
 	ScooterSerial.write(data, sizeof(data) / sizeof(uint8_t));
 	sendUint16LE(rpm);
 	sendUint16LE(checksum);
-	ScooterSerial.listen();
+	//ScooterSerial.listen();
 }
 
 static void setOption(uint8_t id, bool enabled)
@@ -89,7 +87,7 @@ static void setOption(uint8_t id, bool enabled)
 	ScooterSerial.write(enabled ? (uint8_t)0x01 : (uint8_t)0x00);
 	ScooterSerial.write((uint8_t)0x00);
 	sendUint16LE(checksum);
-	ScooterSerial.listen();
+	//ScooterSerial.listen();
 }
 inline void setEcoMode(bool enabled)
 {

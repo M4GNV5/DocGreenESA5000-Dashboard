@@ -53,9 +53,9 @@ void loop()
 			scooterStatus.isTuned = !scooterStatus.isTuned;
 			throttlePressDuration = 0;
 
-			SEND_REPEAT(setEcoMode(!scooterStatus.ecoMode));
 			SEND_REPEAT(setMaxSpeed(scooterStatus.isTuned ? 35 : 20));
-			delay(200);
+			SEND_REPEAT(setEcoMode(!scooterStatus.ecoMode));
+			delay(1000);
 			SEND_REPEAT(setEcoMode(scooterStatus.ecoMode));
 
 			EEPROM.write(0, scooterStatus.isTuned ? 0xAA : 0);

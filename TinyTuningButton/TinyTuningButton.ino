@@ -6,6 +6,8 @@
 
 static bool isTuned = false;
 static bool isLocked = false;
+static volatile uint8_t pressCount = 0;
+static volatile uint32_t lastPress = 0;
 
 void toggleTuning(bool save)
 {
@@ -23,14 +25,25 @@ void toggleTuning(bool save)
 	SEND_REPEAT(setEcoMode(false));
 }
 
+void buttonInterrupt()
+{
+	uint32_t now = millis();
+	if(lastPress + 50 > now)
+		return;
+
+	lastPress = now;
+	pressCount++;
+}
+
 void setup()
 {
 	pinMode(2, INPUT_PULLUP);
+	attachInterrupt(0, buttonInterrupt, CHANGE);
 
 	ScooterSerial.begin(115200);
 	ScooterSerial.stopListening();
 
-	delay(1000);
+	delay(2000);
 
 	if(EEPROM.read(0) == 0xAA)
 		toggleTuning(false);
@@ -38,37 +51,14 @@ void setup()
 
 void loop()
 {
-	static uint8_t pressCount = 0;
-	static bool wasPressed = false;
-	static unsigned long lastPress = 0;
-
-	bool isPressed = digitalRead(2) == LOW;
-	unsigned long diff = millis() - lastPress;
-
-	if(wasPressed && !isPressed && diff > 50)
+	if(lastPress + 500 < millis())
 	{
-		if(diff > 1500)
-			pressCount = 0;
+		uint8_t oldCount = pressCount;
+		pressCount = 0;
 
-		pressCount++;
-		lastPress = millis();
-	}
-	wasPressed = isPressed;
-
-	if(diff > 500)
-	{
-		if(pressCount >= 8)
-		{
-			isLocked = !isLocked;
-			SEND_REPEAT(setLock(isLocked));
-
-			pressCount = 0;
-		}
-		else if((!isTuned && pressCount >= 5)
-			|| (isTuned && pressCount >= 3))
-		{
+		if(oldCount >= 8)
 			toggleTuning(true);
-			pressCount = 0;
-		}
 	}
+
+	delay(100);
 }
