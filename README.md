@@ -26,7 +26,7 @@ a 128x32 OLED display.
 
 A small PCB with an ATTiny45 which is connected between dashboard and ECU allowing to set the max speed.
 
-![](https://i.m4gnus.de/146d5b.JPG)
+![](https://i.m4gnus.de/2020-11/2020-11-15T14:55.JPG)
 
 ## Dashboard PCB
 
@@ -38,7 +38,7 @@ size as the original dashboard.
 On https://jakobloew.me/scooter one can find the manual for the dashboard, with a detailed description of
 all features and functionality.
 
-![](https://i.m4gnus.de/12d79a.JPG)
+![](https://i.m4gnus.de/2020-09/2020-09-04T12:42.JPG)
 
 ## Further Reading
 
@@ -56,14 +56,14 @@ all features and functionality.
 
 ## Pictures
 
-![](https://i.m4gnus.de/12d799.JPG)
-![](https://i.m4gnus.de/12d798.PNG)
-![](https://i.m4gnus.de/12d7a4.PNG)
+![](https://i.m4gnus.de/2020-09/2020-09-04T12:41.JPG)
+![](https://i.m4gnus.de/2020-09/2020-09-04T12:40.PNG)
+![](https://i.m4gnus.de/2020-09/2020-09-04T12:52.PNG)
 
 ## Photos of Prototypes & Development
-![](https://i.m4gnus.de/12d7a1.jpg)
-![](https://i.m4gnus.de/12d7a2.jpg)
-![](https://i.m4gnus.de/12d7a3.jpg)
+![](https://i.m4gnus.de/2020-09/2020-09-04T12:49.jpg)
+![](https://i.m4gnus.de/2020-09/2020-09-04T12:50.jpg)
+![](https://i.m4gnus.de/2020-09/2020-09-04T12:51.jpg)
 
 ## LICENSE
 
